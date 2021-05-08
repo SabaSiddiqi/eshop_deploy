@@ -1,0 +1,93 @@
+{% extends "app/base_site.html" %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>User Profile</h3>
+          <br>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_content">
+              <br />
+              <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="{% url 'shop:checkout_address'%}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="fullname">Full Name <span class="required">*</span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="fullname" name="fullname" required="required" class="form-control col-md-7 col-xs-12" value="{{address_query.full_name}}">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="username">Username<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="username" name="username" required="required" class="form-control col-md-7 col-xs-12" value="{{user.username}}" readonly>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="mobilenumber">Mobile Number <span class="required">*</span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="mobilenumber" name="mobilenumber" required="required" class="form-control col-md-7 col-xs-12" value="{{address_query.mobile_number}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="email">Email <span class="required">*</span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="email" name="email" required="required" class="form-control col-md-7 col-xs-12" value="{{user.email}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="country" class="control-label col-md-3 col-sm-3 col-xs-12">Country</label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input id="country" class="form-control col-md-7 col-xs-12" type="text" name="country" value="Pakistan" readonly>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="province" class="control-label col-md-3 col-sm-3 col-xs-12">Province</label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input id="province" class="form-control col-md-7 col-xs-12" type="text" name="province" value="{{address_query.province}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="city" class="control-label col-md-3 col-sm-3 col-xs-12">City</label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input id="city" class="form-control col-md-7 col-xs-12" type="text" name="city" value="{{address_query.city}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="address" class="control-label col-md-3 col-sm-3 col-xs-12">Address</label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input id="address" class="form-control col-md-7 col-xs-12" type="text" name="address" value="{{address_query.address}}">
+                  </div>
+                </div>
+                <div class="ln_solid"></div>
+                <div class="form-group">
+                  <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                    {% if subs_query.subscribe_status %} <a class="btn btn-danger" href="{% url 'shop:unsubscribe' %}">Unsubscribe</a>
+                    {% else %} <a class="btn btn-success" href="{% url 'shop:subscribe' %}">Subscribe</a>
+                    {% endif %}
+                    <a class="btn btn-danger" href="{% url 'password_change' %}">Change Password</a>
+                    <button type="submit" class="btn btn-success" >Submit</button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}

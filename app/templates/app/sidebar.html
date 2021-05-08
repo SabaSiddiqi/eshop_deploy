@@ -1,0 +1,66 @@
+<div class="left_col scroll-view">
+  <div class="navbar nav_title" style="border: 0;">
+    <a href="{% url 'shop:ShopHome' %}" class="site_title"><i class="fa fa-home"></i> <span>Iyras Eshop!</span></a>
+  </div>
+
+  <div class="clearfix"></div>
+
+  <br />
+  <br />
+
+  <!-- sidebar menu -->
+  <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+    <div class="menu_section">
+<!--      <h3>Shop</h3>-->
+<!--      <br>-->
+      <ul class="nav side-menu">
+
+<!--        <li><a href="{% url 'shop:ShopHome' %}" ><i class="fa fa-home"></i> View All Products</a></li>-->
+
+        <li><a><i class="fa fa-th-large"></i> Shop By Category <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            {% for cat in categories %}
+            <li><a href="/searchbycategory/{{cat|slugify}}">{{cat}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+
+        <li><a><i class="fa fa-tags"></i> Shop By Brand <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            {% for each_brand in all_brands %}
+            <li><a href="/searchbybrand/{{each_brand|slugify}}">{{each_brand.brand_name}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+
+
+        <li><a><i class="fa fa-file"></i> Account & Orders <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a href="{% url 'shop:myorders' %}" >My Orders </a></li>
+            <li><a href="{% url 'shop:checkout_address' %}" >My Profile </a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}"> Log Out </a></li>
+            {% else %}
+            <li><a href="{% url 'login' %}" >Log In </a></li>
+            <li><a href="{% url 'register' %}" >Create Account </a></li>
+            {% endif %}
+          </ul>
+        </li>
+
+
+        <li><a><i class="fa fa-desktop"></i> Customer Care <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+             <li><a href="{% url 'shop:contact_us' %}" >Contact Us</a></li>
+              <li><a href="{% url 'shop:shipping' %}" >Shipping </a></li>
+              <li><a href="{% url 'shop:payment_methods' %}" >Payment Methods</a></li>
+          </ul>
+        </li>
+
+        <li><a href="{% url 'shop:aboutus' %}" ><i class="fa fa-newspaper-o"></i> About Us </span></a>
+
+      </ul>
+    </div>
+  </div>
+  <!-- /sidebar menu -->
+
+</div>

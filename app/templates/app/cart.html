@@ -1,0 +1,230 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Tables {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+<script>
+
+    var timerData = [];
+
+    function secondPassed(row) {
+        var seconds = timerData[row].remaining;
+        var minutes = Math.round((seconds - 30) / 60);
+        var remainingSeconds = seconds % 60;
+        if (remainingSeconds < 10) {
+            remainingSeconds = "0" + remainingSeconds;
+        }
+
+        $("#countdown" + row).html(minutes + ":" + remainingSeconds);
+        if (seconds === 0) {
+            clearInterval(timerData[row].timerId);
+<!--            $("#countdown" + row).html("Expiring Soon");-->
+            document.myform.submit();
+            clearInterval(interval);
+            $("#add_" + row).show();
+            $("#1add_" + row).show();
+            $("#added_" + row).hide();
+            $("#block_" + row).hide();
+            $("#sale_" + row).show();
+            $("#1sale_" + row).show();
+            $.ajax({
+                type: "GET",
+                url: 'unblock.php',
+                data: {
+                    id: row
+                },
+                success: function (data) {
+                    $("#cart-item").html(data);
+                    $("#amount-top").html($("#total").val());
+                    $("#item-total").html($("#carttotal").val());
+                }
+            });
+        } else {
+            seconds--;
+        }
+        timerData[row].remaining = seconds;
+    }
+
+function timer(row, sec) {
+    timerData[row] = {
+        remaining: sec,
+        timerId: setInterval(function () {
+            secondPassed(row);
+        }, 1000)
+    };
+    var sec = timerData[row].timerId;
+}
+/*
+<? php
+foreach($_SESSION["cart_item"] as $item) {
+    $old = strtotime(date("m/d/Y h:i:s ", time()));
+    $new = strtotime($item['time']);
+    $time = $new - $old;
+    echo "timer({$item['id']}, $time);\r\n";
+}
+?>
+*/
+</script>
+
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+<!--          <h3>Cart <small></small></h3>-->
+        </div>
+
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="row">
+
+        <div class="clearfix"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>My Shopping Cart</h2>
+              <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+
+              <div class="table-responsive">
+                <table class="table table-striped jambo_table bulk_action">
+                  <thead>
+                    <tr class="headings">
+<!--                      <th>-->
+<!--                        <input type="checkbox" id="check-all" class="flat">-->
+<!--                      </th>-->
+                        <th class="column-title">Product ID </th>
+                      <th class="column-title">Name </th>
+                      <th class="column-title">Size </th>
+                        <th class="column-title">Price </th>
+                      <th class="column-title">Quantity </th>
+                      <th class="column-title">Amount </th>
+                        <th class="column-title">View</span></th>
+                        <th class="column-title">Remove</span></th>
+                        <th class="column-title" >Expires In</span></th>
+                      <th class="bulk-actions" colspan="7">
+                        <a class="antoo" style="color:#fff; font-weight:500;">Bulk Actions ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                  {% for each_item in user_cart %}
+                    <tr class="even pointer">
+<!--                      <td class="a-center ">-->
+<!--                        <input type="checkbox" class="flat" name="table_records">-->
+<!--                      </td>-->
+                      <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
+                      <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
+                      <td class=" ">{{each_item.product_variant.attribute}} </td>
+                      {% if each_item.product_variant.apply_discount %}
+                      <td class="a-right a-right ">{{each_item.product_variant.discounted_price}} Rs</td>
+                      {% endif %}
+                      {% if each_item.product_variant.apply_discount != True %}
+                      <td class="a-right a-right ">{{each_item.product_variant.price}} Rs </td>
+                      {% endif %}
+
+                      <td class=" ">
+                      <a href="{% url 'shop:add_quantity' product_id=each_item.product_variant.variant.product_id attribute=each_item.product_variant.attribute %}"
+                         class="glyphicon glyphicon-plus" aria-hidden="true" style="color:green;"></a>
+                        {{each_item.product_quantity}}
+                      <a href="{% url 'shop:minus_quantity' product_id=each_item.product_variant.variant.product_id attribute=each_item.product_variant.attribute %}"
+                         class="glyphicon glyphicon-minus" aria-hidden="true" style="color:red;"></a>
+                      </td>
+
+                      <td class=" ">{{each_item.total_amount}}</td>
+
+
+                      <td class=" last"><a href="{% url 'shop:productview' id=each_item.product_variant.variant.product_id %}" >View</a>
+                      <td class=" last"><a href="{% url 'shop:remove_item' product_id=each_item.product_variant.variant.product_id attribute=each_item.product_variant.attribute %}" >Remove</a>
+                      </td>
+
+                        <td  style="color:red;" id="countdown{{each_item.product_variant.variant.product_id }}" class="timer"></td>
+                        {{each_item.add_date_time}}
+
+                        <p id="demo"></p>
+
+
+                        <script type="text/javascript">
+
+                        function millisToMinutesAndSeconds(millis) {
+                          var minutes = Math.floor(millis / 60000);
+                          var seconds = ((millis % 60000) / 1000).toFixed(0);
+                          return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+                        }
+
+                        function millisToSeconds(millis) {
+                          var seconds = ((millis % 60000) / 1000).toFixed(0);
+                          return seconds;
+                        }
+
+                        millisToMinutesAndSeconds(298999); // "4:59"
+                        millisToMinutesAndSeconds(60999);  // "1:01"
+
+                        var date_time = "{{each_item.item_hold_time|date:"Y-m-d H:i:s"}}"
+
+                        var date = new Date(date_time); // some mock date
+                        var D = new Date() ;
+                        var n = D.getTimezoneOffset() * 60000 ;
+                        var G = date - D
+                        var F = n - G
+                        var time_left = 1*60000 - F
+
+                        if (time_left >= 0) { timer({{each_item.product_variant.variant.product_id }}, (time_left/1000).toFixed(0)); }
+                        if (time_left < 0) { timer({{each_item.product_variant.variant.product_id }}, 0); }
+
+<!--                        document.write("Time Left in Milliseconds : " + time_left + "<br>");-->
+<!--                        document.write("Difference between both date times : " + millisToMinutesAndSeconds(F) + "<br>");-->
+
+
+
+                        </script>
+
+                    </tr>
+
+                  {% endfor %}
+
+                  </tbody>
+                </table>
+
+                  {% if user_cart|first %}
+                  <button type="button" style="float:right;" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:order_summary' %}" >Checkout</a></button>
+                  {% else %}
+                  <button type="button" style="float:right;" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:ShopHome' %}" >Back to Shopping</a></button>
+                  {% endif %}
+
+              </div>
+
+                <form name="myform" action="{% url 'shop:check_carts' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="update" value="yes">
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+
+
+
+
+{% endblock javascripts %}
+
+
+

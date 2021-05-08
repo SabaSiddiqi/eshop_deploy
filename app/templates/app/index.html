@@ -1,0 +1,821 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Dashboard 1 {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var itemsMainDiv = ('.MultiCarousel');
+    var itemsDiv = ('.MultiCarousel-inner');
+    var itemWidth = "";
+
+    $('.leftLst, .rightLst').click(function () {
+        var condition = $(this).hasClass("leftLst");
+        if (condition)
+            click(0, this);
+        else
+            click(1, this)
+    });
+
+    ResCarouselSize();
+
+
+
+
+    $(window).resize(function () {
+        ResCarouselSize();
+    });
+
+    //this function define the size of the items
+    function ResCarouselSize() {
+        var incno = 0;
+        var dataItems = ("data-items");
+        var itemClass = ('.item');
+        var id = 0;
+        var btnParentSb = '';
+        var itemsSplit = '';
+        var sampwidth = $(itemsMainDiv).width();
+        var bodyWidth = $('body').width();
+        $(itemsDiv).each(function () {
+            id = id + 1;
+            var itemNumbers = $(this).find(itemClass).length;
+            btnParentSb = $(this).parent().attr(dataItems);
+            itemsSplit = btnParentSb.split(',');
+            $(this).parent().attr("id", "MultiCarousel" + id);
+
+
+            if (bodyWidth >= 1200) {
+                incno = itemsSplit[3];
+                itemWidth = sampwidth / incno;
+            }
+            else if (bodyWidth >= 992) {
+                incno = itemsSplit[2];
+                itemWidth = sampwidth / incno;
+            }
+            else if (bodyWidth >= 768) {
+                incno = itemsSplit[1];
+                itemWidth = sampwidth / incno;
+            }
+            else {
+                incno = itemsSplit[0];
+                itemWidth = sampwidth / incno;
+            }
+            $(this).css({ 'transform': 'translateX(0px)', 'width': itemWidth * itemNumbers });
+            $(this).find(itemClass).each(function () {
+                $(this).outerWidth(itemWidth);
+            });
+
+            $(".leftLst").addClass("over");
+            $(".rightLst").removeClass("over");
+
+        });
+    }
+
+
+    //this function used to move the items
+    function ResCarousel(e, el, s) {
+        var leftBtn = ('.leftLst');
+        var rightBtn = ('.rightLst');
+        var translateXval = '';
+        var divStyle = $(el + ' ' + itemsDiv).css('transform');
+        var values = divStyle.match(/-?[\d\.]+/g);
+        var xds = Math.abs(values[4]);
+        if (e == 0) {
+            translateXval = parseInt(xds) - parseInt(itemWidth * s);
+            $(el + ' ' + rightBtn).removeClass("over");
+
+            if (translateXval <= itemWidth / 2) {
+                translateXval = 0;
+                $(el + ' ' + leftBtn).addClass("over");
+            }
+        }
+        else if (e == 1) {
+            var itemsCondition = $(el).find(itemsDiv).width() - $(el).width();
+            translateXval = parseInt(xds) + parseInt(itemWidth * s);
+            $(el + ' ' + leftBtn).removeClass("over");
+
+            if (translateXval >= itemsCondition - itemWidth / 2) {
+                translateXval = itemsCondition;
+                $(el + ' ' + rightBtn).addClass("over");
+            }
+        }
+        $(el + ' ' + itemsDiv).css('transform', 'translateX(' + -translateXval + 'px)');
+    }
+
+    //It is used to get some elements from btn
+    function click(ell, ee) {
+        var Parent = "#" + $(ee).parent().attr("id");
+        var slide = $(Parent).attr("data-slide");
+        ResCarousel(ell, Parent, slide);
+    }
+
+});
+</script>
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <style>
+    #banner img {
+    width: 100%;
+    height: 100%;
+<!--    object-fit: cover;-->
+    overflow: hidden;
+  }
+
+.MultiCarousel { float: left; overflow: hidden; padding: 15px; width: 100%; position:relative; }
+    .MultiCarousel .MultiCarousel-inner { transition: 1s ease all; float: left; }
+        .MultiCarousel .MultiCarousel-inner .item { float: left;}
+        .MultiCarousel .MultiCarousel-inner .item > div { text-align: center; padding:10px; margin:10px; background:#f1f1f1; color:#666;}
+    .MultiCarousel .leftLst, .MultiCarousel .rightLst { position:absolute; border-radius:50%;top:calc(50% - 20px); }
+    .MultiCarousel .leftLst { left:0; }
+    .MultiCarousel .rightLst { right:0; }
+
+        .MultiCarousel .leftLst.over, .MultiCarousel .rightLst.over { pointer-events: none; background:#ccc; }
+  </style>
+
+
+
+  <div class="right_col" role="main">
+
+    <div class="row">
+
+          <div class="x_content bs-example-popovers">
+            <div class="alert alert-success " role="alert" style="text-align:center;">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              </button>
+              <strong>Free Shopping Over 3000 PKR</strong>
+            </div>
+          </div>
+
+
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div  id="banner" class="demo-placeholder" style="height:300px; margin-top:-30px;">
+              <img src="/static/images/sale_banner.png" />
+            </div>
+          </div>
+
+      </div>
+
+    <br />
+
+    <div class="row">
+
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel tile fixed_height_320">
+          <div class="x_title">
+            <h2>Recently Added</h2>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content">
+<!--            <h4>App Usage across versions</h4>-->
+            <div class="container">
+                <div class="row">
+                    <div class="MultiCarousel" data-items="1,3,5,6" data-slide="1" id="MultiCarousel"  data-interval="1000">
+                        <div class="MultiCarousel-inner">
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="pad15">
+                                    <p class="lead">Multi Item Carousel</p>
+                                    <p>₹ 1</p>
+                                    <p>₹ 6000</p>
+                                    <p>50% off</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary leftLst"><</button>
+                        <button class="btn btn-primary rightLst">></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <br/><br/><br/>
+                        <hr/>
+                        <p>Settings</p>
+                        <p>Change data items for xs,sm,md and lg display items respectively. Ex:data-items="1,3,5,6"</p>
+                        <p>Change data slide for slides per click Ex:data-slide="1"</p>
+                    </div>
+                </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-4 col-xs-12">
+        <div class="x_panel tile fixed_height_320 overflow_hidden">
+          <div class="x_title">
+            <h2>Device Usage</h2>
+            <ul class="nav navbar-right panel_toolbox">
+              <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#">Settings 1</a>
+                  </li>
+                  <li><a href="#">Settings 2</a>
+                  </li>
+                </ul>
+              </li>
+              <li><a class="close-link"><i class="fa fa-close"></i></a>
+              </li>
+            </ul>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content">
+            <table class="" style="width:100%">
+              <tr>
+                <th style="width:37%;">
+                  <p>Top 5</p>
+                </th>
+                <th>
+                  <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                    <p class="">Device</p>
+                  </div>
+                  <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                    <p class="">Progress</p>
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <td>
+                  <canvas class="canvasDoughnut" height="140" width="140" style="margin: 15px 10px 10px 0"></canvas>
+                </td>
+                <td>
+                  <table class="tile_info">
+                    <tr>
+                      <td>
+                        <p><i class="fa fa-square blue"></i>IOS </p>
+                      </td>
+                      <td>30%</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><i class="fa fa-square green"></i>Android </p>
+                      </td>
+                      <td>10%</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><i class="fa fa-square purple"></i>Blackberry </p>
+                      </td>
+                      <td>20%</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><i class="fa fa-square aero"></i>Symbian </p>
+                      </td>
+                      <td>15%</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><i class="fa fa-square red"></i>Others </p>
+                      </td>
+                      <td>30%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-md-4 col-sm-4 col-xs-12">
+        <div class="x_panel tile fixed_height_320">
+          <div class="x_title">
+            <h2>Quick Settings</h2>
+            <ul class="nav navbar-right panel_toolbox">
+              <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#">Settings 1</a>
+                  </li>
+                  <li><a href="#">Settings 2</a>
+                  </li>
+                </ul>
+              </li>
+              <li><a class="close-link"><i class="fa fa-close"></i></a>
+              </li>
+            </ul>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content">
+            <div class="dashboard-widget-content">
+              <ul class="quick-list">
+                <li><i class="fa fa-calendar-o"></i><a href="#">Settings</a>
+                </li>
+                <li><i class="fa fa-bars"></i><a href="#">Subscription</a>
+                </li>
+                <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a> </li>
+                <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
+                </li>
+                <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a> </li>
+                <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
+                </li>
+                <li><i class="fa fa-area-chart"></i><a href="#">Logout</a>
+                </li>
+              </ul>
+
+              <div class="sidebar-widget">
+                  <h4>Profile Completion</h4>
+                  <canvas width="150" height="80" id="chart_gauge_01" class="" style="width: 160px; height: 100px;"></canvas>
+                  <div class="goal-wrapper">
+                    <span id="gauge-text" class="gauge-value pull-left">0</span>
+                    <span class="gauge-value pull-left">%</span>
+                    <span id="goal-text" class="goal-value pull-right">100%</span>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <div class="col-md-4 col-sm-4 col-xs-12">
+        <div class="x_panel">
+          <div class="x_title">
+            <h2>Recent Activities <small>Sessions</small></h2>
+            <ul class="nav navbar-right panel_toolbox">
+              <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#">Settings 1</a>
+                  </li>
+                  <li><a href="#">Settings 2</a>
+                  </li>
+                </ul>
+              </li>
+              <li><a class="close-link"><i class="fa fa-close"></i></a>
+              </li>
+            </ul>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content">
+            <div class="dashboard-widget-content">
+              <ul class="list-unstyled timeline widget">
+                <li>
+                  <div class="block">
+                    <div class="block_content">
+                      <h2 class="title">
+                                        <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                    </h2>
+                      <div class="byline">
+                        <span>13 hours ago</span> by <a>Jane Smith</a>
+                      </div>
+                      <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="block">
+                    <div class="block_content">
+                      <h2 class="title">
+                                        <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                    </h2>
+                      <div class="byline">
+                        <span>13 hours ago</span> by <a>Jane Smith</a>
+                      </div>
+                      <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="block">
+                    <div class="block_content">
+                      <h2 class="title">
+                                        <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                    </h2>
+                      <div class="byline">
+                        <span>13 hours ago</span> by <a>Jane Smith</a>
+                      </div>
+                      <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="block">
+                    <div class="block_content">
+                      <h2 class="title">
+                                        <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                    </h2>
+                      <div class="byline">
+                        <span>13 hours ago</span> by <a>Jane Smith</a>
+                      </div>
+                      <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8 col-sm-8 col-xs-12">
+
+        <div class="row">
+
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>Visitors location <small>geo-presentation</small></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="#">Settings 1</a>
+                      </li>
+                      <li><a href="#">Settings 2</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="close-link"><i class="fa fa-close"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="dashboard-widget-content">
+                  <div class="col-md-4 hidden-small">
+                    <h2 class="line_30">125.7k Views from 60 countries</h2>
+
+                    <table class="countries_list">
+                      <tbody>
+                        <tr>
+                          <td>United States</td>
+                          <td class="fs15 fw700 text-right">33%</td>
+                        </tr>
+                        <tr>
+                          <td>France</td>
+                          <td class="fs15 fw700 text-right">27%</td>
+                        </tr>
+                        <tr>
+                          <td>Germany</td>
+                          <td class="fs15 fw700 text-right">16%</td>
+                        </tr>
+                        <tr>
+                          <td>Spain</td>
+                          <td class="fs15 fw700 text-right">11%</td>
+                        </tr>
+                        <tr>
+                          <td>Britain</td>
+                          <td class="fs15 fw700 text-right">10%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div id="world-map-gdp" class="col-md-8 col-sm-12 col-xs-12" style="height:230px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="row">
+
+
+          <!-- Start to do list -->
+          <div class="col-md-6 col-sm-6 col-xs-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>To Do List <small>Sample tasks</small></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="#">Settings 1</a>
+                      </li>
+                      <li><a href="#">Settings 2</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="close-link"><i class="fa fa-close"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+
+                <div class="">
+                  <ul class="to_do">
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Schedule meeting with new client </p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Create email address for new intern</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Have IT fix the network printer</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Copy backups to offsite location</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Food truck fixie locavors mcsweeney</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Food truck fixie locavors mcsweeney</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Create email address for new intern</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Have IT fix the network printer</p>
+                    </li>
+                    <li>
+                      <p>
+                        <input type="checkbox" class="flat"> Copy backups to offsite location</p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End to do list -->
+
+          <!-- start of weather widget -->
+          <div class="col-md-6 col-sm-6 col-xs-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>Daily active users <small>Sessions</small></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="#">Settings 1</a>
+                      </li>
+                      <li><a href="#">Settings 2</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="close-link"><i class="fa fa-close"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="temperature"><b>Monday</b>, 07:30 AM
+                      <span>F</span>
+                      <span><b>C</b></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-4">
+                    <div class="weather-icon">
+                      <canvas height="84" width="84" id="partly-cloudy-day"></canvas>
+                    </div>
+                  </div>
+                  <div class="col-sm-8">
+                    <div class="weather-text">
+                      <h2>Texas <br><i>Partly Cloudy Day</i></h2>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12">
+                  <div class="weather-text pull-right">
+                    <h3 class="degrees">23</h3>
+                  </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row weather-days">
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Mon</h2>
+                      <h3 class="degrees">25</h3>
+                      <canvas id="clear-day" width="32" height="32"></canvas>
+                      <h5>15 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Tue</h2>
+                      <h3 class="degrees">25</h3>
+                      <canvas height="32" width="32" id="rain"></canvas>
+                      <h5>12 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Wed</h2>
+                      <h3 class="degrees">27</h3>
+                      <canvas height="32" width="32" id="snow"></canvas>
+                      <h5>14 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Thu</h2>
+                      <h3 class="degrees">28</h3>
+                      <canvas height="32" width="32" id="sleet"></canvas>
+                      <h5>15 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Fri</h2>
+                      <h3 class="degrees">28</h3>
+                      <canvas height="32" width="32" id="wind"></canvas>
+                      <h5>11 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="daily-weather">
+                      <h2 class="day">Sat</h2>
+                      <h3 class="degrees">26</h3>
+                      <canvas height="32" width="32" id="cloudy"></canvas>
+                      <h5>10 <i>km/h</i></h5>
+                    </div>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- end of weather widget -->
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- Chart.js -->
+  <script src="/static/vendors/Chart.js/dist/Chart.min.js"></script>
+  <!-- gauge.js -->
+  <script src="/static/vendors/gauge.js/dist/gauge.min.js"></script>
+  <!-- Skycons -->
+  <script src="/static/vendors/skycons/skycons.js"></script>
+  <!-- Flot -->
+  <script src="/static/vendors/Flot/jquery.flot.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.pie.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.time.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.stack.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.resize.js"></script>
+  <!-- Flot plugins -->
+  <script src="/static/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
+  <script src="/static/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
+  <script src="/static/vendors/flot.curvedlines/curvedLines.js"></script>
+  <!-- DateJS -->
+  <script src="/static/vendors/DateJS/build/date.js"></script>
+  <!-- JQVMap -->
+  <script src="/static/vendors/jqvmap/dist/jquery.vmap.js"></script>
+  <script src="/static/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+  <script src="/static/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+{% endblock javascripts %}

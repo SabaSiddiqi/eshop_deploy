@@ -1,0 +1,125 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Login {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Animate.css -->
+  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+<style>
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
+  <div>
+    <a class="hiddenanchor" id="signup"></a>
+    <a class="hiddenanchor" id="signin"></a>
+
+    <div class="login_wrapper">
+      <div class="animate form login_form">
+        <section class="login_content">
+
+          <form  method="post">
+              {% csrf_token %}
+
+            <h1>Create Account</h1>
+
+            <div>
+                {% for each_value in form.visible_fields %}
+
+                <strong style="text-transform: uppercase;">{{ each_value.label_tag}}</strong>
+
+                  {{each_value}}
+                  {{each_value.help_text}}
+
+                  {% for error in each_value.errors %}
+                        <div class="alert alert-danger">
+                           Feild Error {{ error|escape }}
+                        </div>
+                  {% endfor %}
+
+                  {% for error in each_value.non_field_errors %}
+                    <div class="alert alert-danger">
+                        Non Field Error{{ error|escape }}
+                    </div>
+                  {% endfor %}
+
+                  <br/>
+                {% endfor %}
+                <br/>
+
+                <input type="checkbox" name="subscribe" id="subscribe" class="flat" /> SIGN UP TO OUR NEWSLETTER FOR DEALS, TRENDS, AND MORE! UNSUBSCRIBE AT ANY TIME.
+              </div>
+            <br />
+            <button class="btn btn-default" type="submit" value="Register">Register</button>
+
+            <div class="clearfix"></div>
+
+            <div class="separator">
+              <p class="change_link">Already a member ?
+                <a href="{% url 'login' %}" class="to_register"> Log in </a>
+              </p>
+
+              <div class="clearfix"></div>
+              <br />
+
+              <div>
+                <h1><i class="fa fa-home"></i> Iyra's Eshop</h1>
+                <p>©2021 All Rights Reserved. Iyra's Eshop</p>
+              </div>
+            </div>
+
+          </form>
+
+        </section>
+      </div>
+    </div>
+  </div>
+
+
+
+<!--<a href="{% url 'dashboard' %}">Back to dashboard</a>-->
+<!--<a href="{% url 'password_reset' %}">Reset password</a>-->
+<!--<a href="{% url 'register' %}">Register</a>-->
+{% endblock body %}
+

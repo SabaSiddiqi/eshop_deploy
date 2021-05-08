@@ -25,12 +25,14 @@ SECRET_KEY = '0zaa_lo3o@x2dn-cc@rqq+x@+kkj44-7cdv*@^g2xh5r^8is_*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['cartshirt.herokuapp.com','127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1',]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+
+    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shop',
+    'app',
+    'django.contrib.humanize',
+    "countdowntimer_model",
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -129,16 +135,42 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+
+TINYMCE_DEFAULT_CONFIG = {
+    "plugins": "image", #plugins
+}
+
+
+TINYMCE_DEFAULT_CONFIG = {
+    "plugins": "...",
+    "toolbar":"undo redo | formatselect | image |", #toolbar
+    "height": 500, #texteditor height
+
+}
+
+
+
+
+
 STATICFILES_STORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = os.getenv("EMAIL_PORT")
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#For email
 
-import dj_database_url
-prod_db = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(prod_db)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'iyraseshop@gmail.com'
+EMAIL_HOST_PASSWORD = 'ewwrrxvytisnylvd'
+EMAIL_PORT = 587
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "dashboard"
+
+# awesome_website/settings.py
+
+# EMAIL_HOST = "localhost"
+# EMAIL_PORT = 1025
