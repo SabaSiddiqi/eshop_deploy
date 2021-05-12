@@ -1,0 +1,3 @@
+<b> Hi {{username}} </b>
+
+<h3> Your account has been created </h3>

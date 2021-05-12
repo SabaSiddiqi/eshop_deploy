@@ -1,6 +1,10 @@
 {% extends "app/base_site.html" %}
 
+<<<<<<< HEAD
 {% block title %} My Cart {% endblock title %}
+=======
+{% block title %} Tables {% endblock title %}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
 {% block stylesheets %}
   {{ block.super }}
@@ -23,10 +27,15 @@
         $("#countdown" + row).html(minutes + ":" + remainingSeconds);
         if (seconds === 0) {
             clearInterval(timerData[row].timerId);
+<<<<<<< HEAD
 
             var c_s = {{cart.checkout_status|yesno:"true,false"}};
             if (c_s){$("#countdown" + row).html("In Checkout");}
             if (!c_s) {document.myform.submit();}
+=======
+<!--            $("#countdown" + row).html("Expiring Soon");-->
+            document.myform.submit();
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
             clearInterval(interval);
             $("#add_" + row).show();
             $("#1add_" + row).show();
@@ -97,7 +106,11 @@ foreach($_SESSION["cart_item"] as $item) {
             </div>
 
             <div class="x_content">
+<<<<<<< HEAD
                 <p>{{cart_hold_disclaimer|safe}}</p>
+=======
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
               <div class="table-responsive">
                 <table class="table table-striped jambo_table bulk_action">
                   <thead>

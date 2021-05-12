@@ -1,6 +1,9 @@
 {% extends "app/base_site.html" %}
+<<<<<<< HEAD
 {% block title %} Order Summary | Checkout {% endblock title %}
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 {% load humanize %}
 
 {% block content %}
@@ -95,7 +98,11 @@
             <table class="table">
                 <thead>
                   <tr>
+<<<<<<< HEAD
                     <th>ID</th>
+=======
+                    <th>Product ID</th>
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
                     <th>Product</th>
                     <th>Size</th>
                       <th>Quantity</th>
@@ -111,6 +118,10 @@
                     <td>{{each_item.product_variant.variant.product_name}}</td>
                     <td>{{each_item.product_variant.attribute}}</td>
                       <td>{{each_item.product_quantity}}</td>
+<<<<<<< HEAD
+=======
+                    Savings Item
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
                       {% if each_item.product_variant.apply_discount %}
                     <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price}} Rs</del> {{each_item.product_variant.discounted_price}} Rs  </td>
                       {% endif %}
@@ -155,12 +166,15 @@
                   </div>
                 </div>
                 <div class="form-group">
+<<<<<<< HEAD
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Delivery Method</label>
                   <div class="col-md-9 col-sm-9 col-xs-12">
                     <input type="text" class="form-control" disabled="disabled" value="Cash On Delivery (COD)">
                   </div>
                 </div>
                 <div class="form-group">
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Savings </label>
                   <div class="col-md-9 col-sm-9 col-xs-12">
                     <input type="text" class="form-control" disabled="disabled" value="{{cart.cart_savings_total|intcomma}} Rs">

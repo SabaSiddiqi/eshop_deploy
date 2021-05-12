@@ -1,9 +1,32 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from shop.models import *
+<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
+=======
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail,EmailMessage
+from django.core import serializers
+from django.template.loader import get_template, render_to_string
+from django.template import Context
+import pdfkit
+from xhtml2pdf import pisa
+from io import BytesIO
+import os
+from tempfile import NamedTemporaryFile
+from InvoiceGenerator.api import Invoice, Item, Client, Provider, Creator
+from InvoiceGenerator.pdf import SimpleInvoice
+from django.utils.html import strip_tags
+from django.core import mail
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 from django.shortcuts import redirect, reverse
 from django.db.models import Sum
 from django.core.mail import send_mail, BadHeaderError
@@ -12,7 +35,11 @@ from datetime import datetime, timedelta
 
 
 def check_carts_scheduler():
+<<<<<<< HEAD
     for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
+=======
+    for each_cart in Cart.objects.filter(cart_ordered=False):
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         for each_item in Cart_Items.objects.filter(cart=each_cart):
             this_time = datetime.now() - each_item.item_hold_time.replace(tzinfo=None)
             total_seconds = this_time.total_seconds()
@@ -27,7 +54,11 @@ def check_carts_scheduler():
 
 
 def check_carts(request):
+<<<<<<< HEAD
     for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
+=======
+    for each_cart in Cart.objects.filter(cart_ordered=False):
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         for each_item in Cart_Items.objects.filter(cart=each_cart):
             this_time = datetime.now() - each_item.item_hold_time.replace(tzinfo=None)
             total_seconds = this_time.total_seconds()
@@ -49,6 +80,10 @@ def start():
     scheduler.start()
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 @login_required
 def subscribe(request):
     print("Subscribed")
@@ -105,15 +140,25 @@ def terms_conditions(request):
     context = {
         'value': tc_query.hf_value,
         'sub_sub_categories': Sub_Sub_Category.objects.all(),
+<<<<<<< HEAD
         'sub_categories': Sub_Category.objects.all(),
         'categories': Category.objects.all(),
         'header_text': 'All Products',
         'all_brands': Brand.objects.all(),
+=======
+        'sub_categories':Sub_Category.objects.all(),
+        'categories': Category.objects.all(),
+        'header_text':'All Products',
+        'all_brands':Brand.objects.all(),
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     }
 
     return render(request, 'app/terms_conditions.html', context)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 def aboutus(request):
 
     aboutus_query = HtmlField.objects.filter(hf_name='payment_methods').first()
@@ -158,8 +203,12 @@ def filter_by_cat(request, category):
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
+<<<<<<< HEAD
                'header_text':cat_query.first().cat_name,
                'all_brands':Brand.objects.all(),}
+=======
+               'header_text':cat_query.first().cat_name}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     return render(request, 'app/home_searchby.html', context)
 
@@ -204,12 +253,37 @@ def filter_by_subcat(request, category, sub_category):
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
+<<<<<<< HEAD
                'header_text':header_text,
                'all_brands':Brand.objects.all(),}
+=======
+               'header_text':header_text}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     return render(request, 'app/home.html', context)
 
 
+<<<<<<< HEAD
+=======
+def about(request):
+    return render(request, 'shop/about.html')
+
+
+def team(request):
+    return render(request, 'shop/team.html')
+
+
+@csrf_exempt
+def contact(request):
+    if request.method == "POST":
+        params = json.loads(request.body)
+        print(params)
+        contact = ContactUs(name=params['name'], email=params['email'], message=params['message'])
+        contact.save()
+        return JsonResponse({'err': 'false', 'message': 'Message Send'})
+    return render(request, 'shop/contactus.html')
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
 @never_cache
 def productview(request, id):
@@ -243,11 +317,45 @@ def productview(request, id):
                'successful_submit': False,
                 'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),}
 
     return render(request, 'app/productview.html', context)
 
+=======
+               'categories': Category.objects.all()}
+    return render(request, 'app/productview.html', context)
+
+    # return render(request, 'app/productview.html')
+
+
+@csrf_exempt
+def man(request):
+    if request.method == "POST":
+        params = json.loads(request.body)
+        data = Product.objects.filter(category=params['category'])
+        payload = list(data.values())
+        # print(payload)
+        return JsonResponse({'err':'false', 'message': 'Fetched', 'data' : payload})
+    return render(request, 'shop/man.html')
+
+
+@csrf_exempt
+def woman(request):
+    if request.method == "POST":
+        params = json.loads(request.body)
+        data = Product.objects.filter(category=params['category'])
+        payload = list(data.values())
+        # print(payload)
+        return JsonResponse({'err':'false', 'message': 'Fetched', 'data' : payload})
+    return render(request, 'shop/woman.html')
+
+
+def thankyou(request):
+    return render(request, 'shop/thankyou.html')
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
 @login_required
 def add_to_cart(request, product_id, attribute):
@@ -346,8 +454,12 @@ def add_to_cart(request, product_id, attribute):
                'add_item':cart_query,
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),}
+=======
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     return render(request, 'app/productview.html', context)
 
@@ -375,8 +487,12 @@ def remove_item(request , product_id, attribute):
     context = {'user_cart':user_cart_all,
             'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),}
+=======
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     # return render(request, 'app/cart.html', context)
     return redirect('shop:cart')
@@ -386,10 +502,13 @@ def remove_item(request , product_id, attribute):
 @login_required
 def add_quantity(request, product_id, attribute):
 
+<<<<<<< HEAD
     for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=True):
         each_cart.checkout_status = False
         each_cart.save()
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     product = Product.objects.filter(product_id=product_id).first()
     attribute = Attribute.objects.filter(attribute=attribute).first()
     variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
@@ -422,10 +541,13 @@ def add_quantity(request, product_id, attribute):
 @login_required
 def minus_quantity(request, product_id, attribute):
 
+<<<<<<< HEAD
     for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=True):
         each_cart.checkout_status = False
         each_cart.save()
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     product = Product.objects.filter(product_id=product_id).first()
     attribute = Attribute.objects.filter(attribute=attribute).first()
     variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
@@ -461,8 +583,11 @@ def minus_quantity(request, product_id, attribute):
 @login_required
 def cart(request):
 
+<<<<<<< HEAD
     cart_hold_disclaimer = HtmlField.objects.filter(hf_name='cart_hold_disclaimer').first()
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     user_cart = Cart.objects.filter(author=request.user, cart_ordered = False).first()
 
     print("Cart", user_cart)
@@ -498,12 +623,19 @@ def cart(request):
         user_cart.grand_total = cart_grand_total
         user_cart.save()
 
+<<<<<<< HEAD
     context = {'cart_hold_disclaimer':cart_hold_disclaimer.hf_value,
         'user_cart':user_cart_all, 'cart':user_cart,
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),}
+=======
+    context = {'user_cart':user_cart_all, 'cart':user_cart,
+                               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     return render(request, 'app/cart.html', context)
 
@@ -515,9 +647,13 @@ def checkout_address(request):
     subs_query = SubscriptionList.objects.filter(subscribe_user=request.user)
 
     if request.method == "POST":
+<<<<<<< HEAD
         for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=False):
             each_cart.checkout_status = True
             each_cart.save()
+=======
+        print("this")
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         if request.POST.get("fullname"):
             fullname = request.POST.get("fullname")
             print(fullname)
@@ -550,14 +686,18 @@ def checkout_address(request):
             print("Does not exist")
             DeliveryAddress.objects.create(author=request.user, full_name = fullname, mobile_number = mobilenumber, province = province, city = city, address = address)
 
+<<<<<<< HEAD
         return redirect('shop:cart')
 
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     address_query = DeliveryAddress.objects.filter(author=request.user)
 
     if address_query.first():
         print("Already exists")
         print(address_query)
+<<<<<<< HEAD
         context = {'address_query':address_query.first(),
                   'subs_query':subs_query.first(),
                   'sub_sub_categories': Sub_Sub_Category.objects.all(),
@@ -566,6 +706,13 @@ def checkout_address(request):
                     'all_brands':Brand.objects.all(),}
 
         # return redirect('shop:cart')
+=======
+        context ={'address_query':address_query.first(),
+                  'subs_query':subs_query.first(),
+              'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         return render(request, 'app/checkout.html', context)
 
 
@@ -574,12 +721,20 @@ def checkout_address(request):
           'sub_sub_categories': Sub_Sub_Category.objects.all(),
            'sub_categories':Sub_Category.objects.all(),
            'categories': Category.objects.all(),
+<<<<<<< HEAD
         'all_brands':Brand.objects.all(),
     }
 
     # return redirect('shop:cart')
     return render(request, 'app/checkout.html', context)
 
+=======
+    }
+
+    return render(request, 'app/checkout.html', context)
+
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 def contact_us(request):
 
     if request.method == "POST":
@@ -628,14 +783,19 @@ def contact_us(request):
         context ={'address_query':address_query.first(),
                 'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
                   'all_brands':Brand.objects.all(),}
+=======
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         return render(request, 'app/contact_us.html', context)
 
     else:
         context ={
                 # 'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
         'all_brands':Brand.objects.all(),}
         return render(request, 'app/contact_us.html', context)
@@ -647,6 +807,15 @@ def order_summary(request):
         each_cart.checkout_status = True
         each_cart.save()
 
+=======
+               'categories': Category.objects.all()}
+        return render(request, 'app/contact_us.html', context)
+
+
+@login_required
+def order_summary(request):
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     address_query = DeliveryAddress.objects.filter(author=request.user)
     user_cart = Cart.objects.filter(author=request.user,cart_ordered = False).first()
 
@@ -655,11 +824,17 @@ def order_summary(request):
         user_cart_all = Cart_Items.objects.filter(cart = user_cart)
 
         context = {'address_query': address_query.first(), 'user_cart':user_cart_all, 'cart':user_cart,
+<<<<<<< HEAD
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),
                'cart_hold_disclaimer':cart_hold_disclaimer.hf_value}
+=======
+                                   'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         return render(request, 'app/order_summary.html', context)
 
     else:
@@ -681,9 +856,12 @@ def order_summary(request):
 @login_required
 def placeorder(request):
 
+<<<<<<< HEAD
     # update cart Item times
 
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     user_cart = Cart.objects.filter(author=request.user,cart_ordered = False)
     user_address = DeliveryAddress.objects.get(author=request.user)
 
@@ -698,8 +876,12 @@ def placeorder(request):
                    'cart': user_cart,
                    'sub_sub_categories': Sub_Sub_Category.objects.all(),
                    'sub_categories':Sub_Category.objects.all(),
+<<<<<<< HEAD
                    'categories': Category.objects.all(),
                    'all_brands':Brand.objects.all(),}
+=======
+                   'categories': Category.objects.all()}
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         return render(request, 'app/placeorder.html', context)
 
     else:
@@ -725,7 +907,161 @@ def myorders(request):
                'user_cart_all': user_cart_all,
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories': Sub_Category.objects.all(),
+<<<<<<< HEAD
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),}
 
     return render(request, 'app/myorders.html', context)
+=======
+               'categories': Category.objects.all()}
+
+    return render(request, 'app/myorders.html', context)
+
+@csrf_exempt
+def product_view(request):
+    if request.method == 'POST':
+        params = json.loads(request.body)
+        print(params['id'])
+        data = Product.objects.filter(product_id=params['id'])
+        # print(data.values())
+        payload = list(data.values())
+        return JsonResponse({'err' : 'false', 'message' : 'Fetched', 'data': payload})
+
+@csrf_exempt
+def allproduct(request):
+
+    if request.method == 'POST':
+        data = Product.objects.all()
+        # print(data.values())
+        payload = list(data.values())
+        return JsonResponse({'err' : 'false', 'message' : 'Fetched', 'data': payload})
+    # return render(request, 'shop/viewProduct.html')
+
+
+@csrf_exempt
+def sentemail1(request):
+    if request.method == 'POST':
+        # res = send_mail(
+        #     'Subject here',
+        #     'Here is the message.',
+        #     'shubhamroy12345@gmail.com',
+        #     ['shubham.roy021@gmail.com'],
+        #     fail_silently=False,
+        # )
+        # print(res)
+        email = EmailMessage(subject = 'Order Confirmed',
+                                body = 'Your Order succesfully placed',
+                                from_email = 'Cart Shart',
+                                to = ['shubham.roy021@gmail.com','codeingschool73@gmail.com'])
+        email.send()
+        print(email.message)
+        return JsonResponse({'err' : 'false', 'message' : 'Fetched', 'data': 'payload'})
+    # return render(request, 'shop/viewProduct.html')
+
+@csrf_exempt
+def tracker(request):
+    if request.method == 'POST':
+        params = json.loads(request.body)
+        print(params['orderId'])
+        print(params['email'])
+        try:
+            order = Order.objects.filter(order_id=params['orderId'], email=params['email'])
+            print(order)
+            if len(order) > 0:
+                update = OrderUpdate.objects.filter(order_id=params['orderId'])
+                # print(update)
+                payload = list(update.values())
+                return JsonResponse({'err':'false', 'message' : 'Order Tracked', 'payload' : payload})
+            else:
+                return JsonResponse({'err':'true', 'message' : 'Please Enter Right Order Id or Email'})
+        except Exception as e:
+            # print(e)
+            return JsonResponse({'err':'true', 'message' : 'Something West Worng'})
+    return render(request, 'shop/tracker.html')
+
+def search(request):
+    return JsonResponse({'message' : 'This is search page'})
+
+def gen_pdf(request):
+    # pdf = render_to_pdf('shop/pdf_template.html', {"data" :"Subham"})
+    # response = HttpResponse(pdf, content_type='application/pdf')
+    # filename = "output.pdf"
+    # content = "attachment; filename=output.pdf"
+    # response['Content-Disposition'] = content
+    # return response
+
+# choose english as language
+    os.environ["INVOICE_LANG"] = "en"
+
+    client = Client('Client company')
+    provider = Provider('My company', bank_account='2600420569', bank_code='2010')
+    creator = Creator('John Doe')
+
+    invoice = Invoice(client, provider, creator)
+    invoice.currency_locale = 'en_US.UTF-8'
+    invoice.add_item(Item(32, 600, description="Item 1"))
+    invoice.add_item(Item(60, 50, description="Item 2", tax=21))
+    invoice.add_item(Item(50, 60, description="Item 3", tax=0))
+    invoice.add_item(Item(5, 600, description="Item 4", tax=15))
+    pdf = SimpleInvoice(invoice)
+    pdf.gen("invoice.pdf", generate_qr_code=True)
+    return JsonResponse({'message' : 'This is search page'})
+
+def render_to_pdf(template_src, context_dict={}):
+	template = get_template(template_src)
+	html  = template.render(context_dict)
+	result = BytesIO()
+	pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+	if not pdf.err:
+		return HttpResponse(result.getvalue(), content_type='application/pdf')
+	return None
+
+@csrf_exempt
+def cheackout(request):
+    if request.method == 'POST':
+        params = json.loads(request.body)
+        print(type( params['ordered_item']))
+        dict2 = params['ordered_item']
+        address = f"{params['addressLine1']} - {params['addressLine2']}"
+        totalPrice = 0
+        print(type(dict2))
+        for key in dict2:
+            for another_key in dict2[key]:
+            #print(another_key)
+                if(another_key=="totalPrice"):
+                    totalPrice=totalPrice+dict2[key][another_key]
+        print(totalPrice)
+        order = Order(first_name=params['first_name'], last_name=params['last_name'], email=params['email'], phone=params['phone'], address=address,
+                        city=params['city'], state=params['state'], zip_code=params['zip_code'],total_price=totalPrice,date=params['date'], ordered_item=params['ordered_item'])
+        order.save()
+        print(order.order_id)
+        order_id = order.order_id
+        update = OrderUpdate(order_id=order_id, update_desc="Order Placed", status="Order Placed")
+        update.save()
+        sentMail(order_id,params['email'], params['first_name'], params['last_name'], address, dict2, totalPrice, params['date'])
+        return JsonResponse({'err': 'false', 'message' : 'Order Placeed', 'order_id': order_id})
+
+def sentMail(order_id, email, first_name, last_name, address, orderItem, totalPrice, date):
+    # emailArr = []
+    # emailArr.append(email)
+    # for key, val in dict2.items():
+    # if isinstance(val, dict):
+    #     print(val.get('product_name'))
+    #     print(val.get('quantity'))
+    #     print(val.get('price'))
+    #     print(val.get('totalPrice'))
+    print(orderItem)
+    subject = 'Order Confirmed'
+    html_message = render_to_string('shop/mail_template.html', {'orderid': order_id, 'email' : email, 'first_name':first_name, 'last_name':last_name, 'address':address, 'orderItem': orderItem, 'totalPrice': totalPrice, 'date':date})
+    plain_message = strip_tags(html_message)
+    from_email = 'Cart Shart'
+    to = email
+    mail.send_mail(subject, plain_message, from_email, [to], html_message=html_message)
+    # email = EmailMessage(subject = 'Order Confirmed',
+    #                             body = f'Your Order succesfully placed. Your order Id {order_id}',
+    #                             from_email = 'Cart Shart',
+    #                             to = [email])
+    # email = EmailMessage(subject,plain_message,from_email,[to], html_message=html_message)
+    # email.send()
+    return True
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2

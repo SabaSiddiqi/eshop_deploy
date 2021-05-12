@@ -8,7 +8,11 @@ from shop.models import Cart, SubscriptionList
 from shop.views import subscribe, unsubscribe
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+<<<<<<< HEAD
 from shop.models import HtmlField, Logo
+=======
+
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
 
 
@@ -34,6 +38,7 @@ def register(request):
                 SubscriptionList.objects.create(subscribe_user=request.user, subscribe_status=True)
             else:
                 SubscriptionList.objects.create(subscribe_user=request.user, subscribe_status=False)
+<<<<<<< HEAD
             logo = Logo.objects.filter(logo_text='logo').first()
 
             # msg_plain = render_to_string('../app/templates/app/account_created.txt', {'username': user.username})
@@ -55,6 +60,17 @@ def register(request):
                 ['saba.siddiqui.2010@gmail.com'],
                 fail_silently=False,
                 html_message=message,
+=======
+
+            msg_plain = render_to_string('users/account_created.txt', {'username': user.username})
+            msg_html = render_to_string('users/account_created.html', {'username': user.username})
+
+            send_mail(
+                'email title',
+                msg_plain,
+                'iyraseshop@gmail.com', ['saba.siddiqui.2010@gmail.com'], fail_silently=False,
+                html_message=msg_html,
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
                 )
 
             return redirect(reverse("dashboard"))

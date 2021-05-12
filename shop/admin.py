@@ -4,6 +4,10 @@ from shop.models import *
 
 admin.site.register(Product)
 admin.site.register(UserOrder)
+<<<<<<< HEAD
+=======
+admin.site.register(OrderUpdate)
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 admin.site.register(ContactUs)
 admin.site.register(Image)
 admin.site.register(ImageAlbum)
@@ -20,4 +24,7 @@ admin.site.register(Constants)
 admin.site.register(HtmlField)
 admin.site.register(Banner)
 admin.site.register(SubscriptionList)
+<<<<<<< HEAD
 admin.site.register(Logo)
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2

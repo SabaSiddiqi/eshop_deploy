@@ -1,6 +1,7 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+<<<<<<< HEAD
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
@@ -12,6 +13,8 @@
         </value>
       </option>
     </inspection_tool>
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
@@ -35,6 +38,7 @@
           <option value="E501" />
           <option value="W29" />
           <option value="E501" />
+<<<<<<< HEAD
           <option value="W29" />
           <option value="E501" />
           <option value="W29" />
@@ -57,6 +61,8 @@
           <option value="E501" />
           <option value="W29" />
           <option value="E501" />
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
         </list>
       </option>
     </inspection_tool>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ECom – Cart Shirt
 
 Cart Shirt is a e-commerce website made with Django nnd JavaScript
@@ -17,4 +18,6 @@ Please make sure to update tests as appropriate.
 
 ## Demo
 [Watch On YouTube](https://www.youtube.com/watch?v=4Zmvr8B4kLk)
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 

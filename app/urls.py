@@ -1,7 +1,10 @@
 from django.urls import path, re_path
 from app import views
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 urlpatterns = [
     # Matches any html file - to be used for gentella
     # Avoid using your .html in your resources.
