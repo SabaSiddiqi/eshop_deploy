@@ -1,0 +1,311 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} {{product.brand}} - {{product.category.cat_name}} - {{product.product_name}}{% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<script>
+function myFunction(imgs) {
+  var expandImg = document.getElementById("expandedImg");
+  expandImg.src = imgs.src;
+}
+</script>
+
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="">
+<!--          <h3>{{product.category.cat_name}} - {{product.sub_category.sub_cat_name}} - {{product.product_name}} </h3>-->
+          <h3>{{product.category.cat_name}} - {{product.product_name}} </h3>
+        </div>
+
+        <div class="title_right">
+<!--          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">-->
+<!--            <div class="input-group">-->
+<!--              <input type="text" class="form-control" placeholder="Search for...">-->
+<!--              <span class="input-group-btn">-->
+<!--                <button class="btn btn-default" type="button">Go!</button>-->
+<!--              </span>-->
+<!--            </div>-->
+<!--          </div>-->
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <br>
+          <div class="x_panel">
+            <div class="x_content">
+
+              <div class="col-md-7 col-sm-7 col-xs-12">
+
+                  {% for each_image in product_images %}
+
+                    {% if each_image.default %}
+                      <div class="product-image" >
+                          <img id="expandedImg" src="/media/{{each_image.image}}" style="width:100%">
+                      </div>
+                    {% endif %}
+
+                    <div class="product_gallery" id="sub_image">
+                      <a><img src="/media/{{each_image.image}}" alt="..." onclick="myFunction(this);"/></a>
+                    </div>
+                  {% endfor %}
+
+
+              </div>
+
+              <div class="col-md-5 col-sm-5 col-xs-12" style="border:0px solid #e5e5e5;">
+
+                <h3 class="prod_title">{{product.brand}} - {{product.product_name}}</h3>
+
+                <p>{{product.product_desc}}</p>
+                <br />
+
+                <div class="">
+                  <h2>Options  <small>Please select one</small></h2>
+
+                    <form method="post" action="{{each_variant.product_id}}">
+                      <ul class="list-inline prod_size">
+
+                        {% for variant in selected_variant %}
+                        {% csrf_token %}
+                         {% for each_variant in variants %}
+                          {% if variant.attribute == each_variant.attribute %}
+                            <li><button type="submit" name="size" class="btn btn-default btn-s" style="background-color:gold;"
+                                        value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
+                          {% endif %}
+
+                          {% if variant.attribute != each_variant.attribute %}
+                            <li><button type="submit" name="size" class="btn btn-default btn-s"
+                                  value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
+                          {% endif %}
+                          {% endfor %}
+
+                        {% empty %}
+
+                          {% with variants.all|first as variant %}
+
+                            {% csrf_token %}
+                            {% for each_variant in variants %}
+                                {% if variant.attribute == each_variant.attribute %}
+                                  <li><button type="submit" name="size" class="btn btn-default btn-s" style="background-color:gold;"
+                                              value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
+                                {% endif %}
+
+                                {% if variant.attribute != each_variant.attribute %}
+                                  <li><button type="submit" name="size" class="btn btn-default btn-s"
+                                        value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
+                                {% endif %}
+
+                            {% endfor %}
+                          {% endwith %}
+                        {% endfor %}
+
+                        </ul>
+                    </form>
+                    <h3> </h3>
+
+                  {% for variant in selected_variant %}
+                      {% if variant.apply_discount %}
+                        <div class="product_price">
+                          <h2 class="price">Rs. {{variant.discounted_price}}</h2>
+                          <span class="price-tax" style="">
+                            <h3 style="text-decoration:line-through;">Rs. {{variant.price}}</h3>
+                            <h3 style="color:red;"> {{variant.discount_percent}}% OFF </h3></span>
+                          </div>
+                      {% endif %}
+
+
+                      {% if variant.apply_discount != True %}
+                        <div class="product_price">
+                          <br>
+                          <h2 class="price">Rs. {{variant.discounted_price}}</h2>
+                          <br>
+                          <br>
+                        </div>
+                      {% endif %}
+
+                  {% empty %}
+
+                    {% with variants.all|first as variant %}
+
+                      {% if variant.apply_discount %}
+                        <div class="product_price">
+                          <h2 class="price">Rs. {{variant.discounted_price}}</h2>
+                          <span class="price-tax" style="">
+                            <h3 style="text-decoration:line-through;">Rs. {{variant.price}}</h3>
+                            <h3 style="color:red;"> {{variant.discount_percent}}% OFF  </h3></span>
+                          </div>
+                      {% endif %}
+
+
+                      {% if variant.apply_discount != True %}
+                        <div class="product_price">
+                          <br>
+                          <h2 class="price">Rs. {{variant.discounted_price}}</h2>
+                          <br>
+                          <br>
+                        </div>
+                      {% endif %}
+
+
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+
+
+                <div class="">
+
+
+                  {% for variant in selected_variant %}
+
+                    {% with variant as sel %}
+                      <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
+                    {% csrf_token %}
+                    {% endwith %}
+
+                    {% with ''|center:variant.num_available as range %}
+                      <select class="btn btn-default btn-lg" name="quantity">
+                        {% for _ in range %}
+                          <option> {{ forloop.counter }}</option>
+                        {% endfor %}
+                        </select>
+                    {% endwith %}
+
+                    {% if variant.num_available < 1 %}
+                    <button type="submit" disabled  name="addtocart" value="variant" class="btn btn-default btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Sold Out</button>
+                    {% else %}
+                    <button type="submit" name="addtocart" value="variant" class="btn btn-default btn-success btn-lg" data-toggle="modal" data-target="#exampleModal">Add to Cart</button>
+                    {% endif %}
+
+
+                  {% empty %}
+                    {% with variants.all|first as variant %}
+
+                        {% with variant as sel %}
+                      <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
+                    {% csrf_token %}
+                    {% endwith %}
+
+                      {% with ''|center:variant.num_available as range %}
+                      <select class="btn btn-default btn-lg" name="quantity">
+                      {% for _ in range %}
+                        <option> {{ forloop.counter }}</option>
+                      {% endfor %}
+                        </select>
+                    {% endwith %}
+
+                    {% if variant.num_available < 1 %}
+                    <button type="submit" disabled  name="addtocart" value="variant" class="btn btn-default btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Sold Out</button>
+                    {% else %}
+                    <button type="submit" name="addtocart" value="variant" class="btn btn-default btn-success btn-lg" data-toggle="modal" data-target="#exampleModal">Add to Cart</button>
+                    {% endif %}
+
+                    {% endwith %}
+
+                    {% endfor %}
+
+
+<!--                     Modal-->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="modal-title" id="exampleModalLabel">ADDED TO YOUR CART
+                            </h4>
+
+
+<!--                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                              <span aria-hidden="true">&times;</span>-->
+<!--                            </button>-->
+                          </div>
+                          <div class="modal-body">
+
+                            <div class="row">
+
+                              <div class="col-md-4">
+                                {% for each_image in product_images %}
+                                  {% if each_image.default %}
+                                        <img  src="/media/{{each_image.image}}" style="width:200px;">
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+
+
+                      {% if add_item.product_variant.apply_discount %}
+
+                              <div class="col-md-3" style="right-margin:30px;">
+                                <p><b>Item :</b> {{add_item.product_variant.variant}}</p>
+                                <p><b>Size : </b>{{add_item.product_variant.attribute}}</p>
+                                <p><b>Quantity </b>: {{add_item.product_quantity}}</p>
+                                <p><b>Price : </b> Rs. {{add_item.product_variant.discounted_price}} Rs. {{add_item.product_variant.price}}  {{add_item.product_variant.discount_percent}}% OFF </p>
+                              </div>
+
+                      {% endif %}
+
+                      {% if add_item.product_variant.apply_discount != True %}
+                              <div class="col-md-3" style="right-margin:30px;">
+                                <p><b>Item :</b> {{add_item.product_variant.variant}}</p>
+                                <p><b>Size : </b>{{add_item.product_variant.attribute}}</p>
+                                <p><b>Quantity </b>: {{add_item.product_quantity}}</p>
+                                <p><b>Price : </b> Rs. {{add_item.product_variant.price}}  </p>
+                              </div>
+                      {% endif %}
+
+                            </div>
+
+                          </div>
+                          <div class="modal-footer">
+                            {% with variants.all|first as opt %}
+                            <button type="button" class="btn btn-secondary" ><a href="{% url 'shop:productview' id=opt.variant.product_id %}" >Keep Shopping</a></button>
+                            {% endwith %}
+                            <button type="button" class="btn btn-secondary"><a href="{% url 'shop:cart'  %}" >Checkout</a></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+
+
+              </div>
+
+
+              <div class="col-md-12">
+
+                <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                  <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if successful_submit %}
+    Successful Submit {{successful_submit}}
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+
+{% endblock javascripts %}

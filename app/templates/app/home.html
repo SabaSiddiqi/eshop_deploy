@@ -1,0 +1,295 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Shop Global Brands In Pakistan {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var itemsMainDiv = ('.MultiCarousel');
+    var itemsDiv = ('.MultiCarousel-inner');
+    var itemWidth = "";
+
+    $('.leftLst, .rightLst').click(function () {
+        var condition = $(this).hasClass("leftLst");
+        if (condition)
+            click(0, this);
+        else
+            click(1, this)
+    });
+
+    ResCarouselSize();
+
+
+
+
+    $(window).resize(function () {
+        ResCarouselSize();
+    });
+
+    //this function define the size of the items
+    function ResCarouselSize() {
+        var incno = 0;
+        var dataItems = ("data-items");
+        var itemClass = ('.item');
+        var id = 0;
+        var btnParentSb = '';
+        var itemsSplit = '';
+        var sampwidth = $(itemsMainDiv).width();
+        var bodyWidth = $('body').width();
+        $(itemsDiv).each(function () {
+            id = id + 1;
+            var itemNumbers = $(this).find(itemClass).length;
+            btnParentSb = $(this).parent().attr(dataItems);
+            itemsSplit = btnParentSb.split(',');
+            $(this).parent().attr("id", "MultiCarousel" + id);
+
+
+            if (bodyWidth >= 1200) {
+                incno = itemsSplit[3];
+                itemWidth = sampwidth / incno;
+            }
+            else if (bodyWidth >= 992) {
+                incno = itemsSplit[2];
+                itemWidth = sampwidth / incno;
+            }
+            else if (bodyWidth >= 768) {
+                incno = itemsSplit[1];
+                itemWidth = sampwidth / incno;
+            }
+            else {
+                incno = itemsSplit[0];
+                itemWidth = sampwidth / incno;
+            }
+            $(this).css({ 'transform': 'translateX(0px)', 'width': itemWidth * itemNumbers });
+            $(this).find(itemClass).each(function () {
+                $(this).outerWidth(itemWidth);
+            });
+
+            $(".leftLst").addClass("over");
+            $(".rightLst").removeClass("over");
+
+        });
+    }
+
+
+    //this function used to move the items
+    function ResCarousel(e, el, s) {
+        var leftBtn = ('.leftLst');
+        var rightBtn = ('.rightLst');
+        var translateXval = '';
+        var divStyle = $(el + ' ' + itemsDiv).css('transform');
+        var values = divStyle.match(/-?[\d\.]+/g);
+        var xds = Math.abs(values[4]);
+        if (e == 0) {
+            translateXval = parseInt(xds) - parseInt(itemWidth * s);
+            $(el + ' ' + rightBtn).removeClass("over");
+
+            if (translateXval <= itemWidth / 2) {
+                translateXval = 0;
+                $(el + ' ' + leftBtn).addClass("over");
+            }
+        }
+        else if (e == 1) {
+            var itemsCondition = $(el).find(itemsDiv).width() - $(el).width();
+            translateXval = parseInt(xds) + parseInt(itemWidth * s);
+            $(el + ' ' + leftBtn).removeClass("over");
+
+            if (translateXval >= itemsCondition - itemWidth / 2) {
+                translateXval = itemsCondition;
+                $(el + ' ' + rightBtn).addClass("over");
+            }
+        }
+        $(el + ' ' + itemsDiv).css('transform', 'translateX(' + -translateXval + 'px)');
+    }
+
+    //It is used to get some elements from btn
+    function click(ell, ee) {
+        var Parent = "#" + $(ee).parent().attr("id");
+        var slide = $(Parent).attr("data-slide");
+        ResCarousel(ell, Parent, slide);
+    }
+
+});
+</script>
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <style>
+    #banner img {
+    width: 100%;
+    height: 100%;
+<!--    object-fit: cover;-->
+    overflow: hidden;
+  }
+
+.MultiCarousel { float: left; overflow: hidden; padding: 5px; width: 100%; position:relative; }
+    .MultiCarousel .MultiCarousel-inner { transition: 1s ease all; float: left; }
+        .MultiCarousel .MultiCarousel-inner .item { float: left;}
+        .MultiCarousel .MultiCarousel-inner .item > div { text-align: center; padding:5px; margin:5px; background:#f1f1f1; color:#666;}
+    .MultiCarousel .leftLst, .MultiCarousel .rightLst { position:absolute; border-radius:50%;top:calc(50% - 20px); }
+    .MultiCarousel .leftLst { left:0; }
+    .MultiCarousel .rightLst { right:0; }
+
+        .MultiCarousel .leftLst.over, .MultiCarousel .rightLst.over { pointer-events: none; background:#ccc; }
+  </style>
+
+
+
+  <div class="right_col" role="main">
+
+    <div class="row">
+
+          <div class="x_content bs-example-popovers">
+            <div class="alert alert-success " role="alert" style="text-align:center;">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              </button>
+              <strong>{{banner.banner_text}}</strong>
+            </div>
+          </div>
+
+
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div  id="banner" class="demo-placeholder" style="height:300px; margin-top:-30px;">
+              <img src="/media/{{banner.banner_image}}" />
+            </div>
+          </div>
+
+      </div>
+
+    <br />
+
+    <div class="row">
+
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel tile" style="height:360px;">
+          <div class="x_title">
+            <h2>Recently Added</h2>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content" style="margin-top:-20px;">
+                <div class="row">
+                    <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel"  data-interval="1000">
+                        <div class="MultiCarousel-inner">
+                          {% for each_product in all_products reversed %}
+                            <div class="item">
+                                  <div class="thumbnail">
+                                    <div class="image view view-first">
+
+                                      {% for each_image in images %}
+                                        {% if each_image.album == each_product.image %}
+                                          {% if each_image.default == True %}
+                                            <a href="/productview/{{each_product.product_id}}">
+                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.image}}" alt="image" />
+                                            </a>
+                                          {% endif %}
+                                        {% endif %}
+                                      {% endfor %}
+                                    </div>
+                                    <div class="caption">
+                                      <p >{{each_product.product_name}}</p>
+                                      <p style="text-decoration:line-through;">{{each_product.price}} PKR</p>
+
+                                      {% if each_product.discount_percent != None %}
+                                      <p>{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+                                      {% endif  %}
+                                      {% if each_product.discount_percent == None %}
+                                      <p> <br></p>
+                                      {% endif  %}
+                                    </div>
+                                  </div>
+
+                                </div>
+                          {% endfor %}
+                        </div>
+                        <button class="btn btn-primary leftLst"><</button>
+                        <button class="btn btn-primary rightLst">></button>
+                    </div>
+                </div>
+          </div>
+        </div>
+        <div class="x_panel tile" style="height:360px;">
+          <div class="x_title">
+            <h2>Featured</h2>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content" style="margin-top:-20px;">
+                <div class="row">
+                    <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel1"  data-interval="1000">
+                        <div class="MultiCarousel-inner">
+                          {% for each_product in all_products %}
+                          {% if each_product.is_featured %}
+                            <div class="item">
+                                  <div class="thumbnail">
+                                    <div class="image view view-first">
+
+                                      {% for each_image in images %}
+                                        {% if each_image.album == each_product.image %}
+                                          {% if each_image.default == True %}
+                                            <a href="/productview/{{each_product.product_id}}">
+                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.image}}" alt="image" />
+                                            </a>
+                                          {% endif %}
+                                        {% endif %}
+                                      {% endfor %}
+                                    </div>
+                                    <div class="caption">
+                                      <p >{{each_product.product_name}}</p>
+                                      <p style="text-decoration:line-through;">{{each_product.price}} PKR</p>
+
+                                      {% if each_product.discount_percent != None %}
+                                      <p>{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+                                      {% endif  %}
+                                      {% if each_product.discount_percent == None %}
+                                      <p> <br></p>
+                                      {% endif  %}
+                                    </div>
+                                  </div>
+
+                                </div>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                        <button class="btn btn-primary leftLst"><</button>
+                        <button class="btn btn-primary rightLst">></button>
+                    </div>
+                </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- Chart.js -->
+  <script src="/static/vendors/Chart.js/dist/Chart.min.js"></script>
+  <!-- gauge.js -->
+  <script src="/static/vendors/gauge.js/dist/gauge.min.js"></script>
+  <!-- Skycons -->
+  <script src="/static/vendors/skycons/skycons.js"></script>
+  <!-- Flot -->
+  <script src="/static/vendors/Flot/jquery.flot.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.pie.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.time.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.stack.js"></script>
+  <script src="/static/vendors/Flot/jquery.flot.resize.js"></script>
+  <!-- Flot plugins -->
+  <script src="/static/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
+  <script src="/static/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
+  <script src="/static/vendors/flot.curvedlines/curvedLines.js"></script>
+  <!-- DateJS -->
+  <script src="/static/vendors/DateJS/build/date.js"></script>
+  <!-- JQVMap -->
+  <script src="/static/vendors/jqvmap/dist/jquery.vmap.js"></script>
+  <script src="/static/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+  <script src="/static/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+{% endblock javascripts %}
