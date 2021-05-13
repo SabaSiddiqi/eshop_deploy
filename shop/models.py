@@ -91,15 +91,12 @@ class Constants(models.Model):
 
 class Brand (models.Model):
     # cat_id = models.AutoField(primary_key=True,)
-<<<<<<< HEAD
     brand_name = models.CharField(max_length=225, null=True, default="Brand")
     brand_des = models.CharField(max_length=250, null=True)
     brand_slug = AutoSlugField(populate_from='brand_name', blank=True, null=True)
-=======
     brand_name = models.CharField(max_length=225, null = True, default = "Brand")
     brand_des = models.CharField(max_length=250, null=True)
     brand_slug = AutoSlugField(populate_from='brand_name',blank=True, null=True)
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     def __str__(self):
         return self.brand_name
@@ -168,12 +165,9 @@ class ProductVariant(models.Model):
     def __str__(self):
         return f"{self.variant} - {self.attribute}"
 
-<<<<<<< HEAD
 
-=======
 #cart notifications
 #save for only two hours
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 class Cart (models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     cart_total = models. IntegerField(default=0, blank=True, null=True)
@@ -181,11 +175,8 @@ class Cart (models.Model):
     delivery_charges = models.IntegerField(default=0, blank=True, null=True)
     grand_total = models. IntegerField(default=0, blank=True, null=True)
     cart_savings_total = models. IntegerField(default=0, blank=True, null=True)
-<<<<<<< HEAD
     checkout_status = models.BooleanField(default=False)
     checkout_time = models.DateTimeField(auto_now=True, null=True, blank=True)
-=======
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
     def save(self, *args, **kwargs):
         if self.cart_total > 5000:
@@ -234,15 +225,12 @@ class DeliveryAddress(models.Model):
 class UserOrder(models.Model):
 
     STATUS_CHOICES = (
-<<<<<<< HEAD
         ('active', 'ACTIVE'),
         ('shipped', 'SHIPPED'),
         ('deliver', 'DELIVER'),
-=======
     ('active','ACTIVE'),
     ('shipped', 'SHIPPED'),
     ('deliver','DELIVER'),
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
     )
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
@@ -253,8 +241,6 @@ class UserOrder(models.Model):
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='active')
 
 
-<<<<<<< HEAD
-=======
 class OrderUpdate(models.Model):
     update_id  = models.AutoField(primary_key=True)
     order_id = models.IntegerField(default="")
@@ -264,7 +250,6 @@ class OrderUpdate(models.Model):
 
     def __str__(self):
         return f"{self.order_id} - {self.status}"
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 
 
 class ContactUs(models.Model):
