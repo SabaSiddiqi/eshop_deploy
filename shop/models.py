@@ -6,11 +6,11 @@ from tinymce import models as tinymce_models
 from django.conf import settings
 
 
-
 def get_upload_path(instance, filename):
     title = instance.album.name
     slug = slugify(title)
     return "images/%s/%s" % (title,filename)
+
 
 class Banner(models.Model):
     banner_text = models.CharField(max_length=255)

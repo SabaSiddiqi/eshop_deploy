@@ -4,26 +4,6 @@ from shop.models import *
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail,EmailMessage
-from django.core import serializers
-from django.template.loader import get_template, render_to_string
-from django.template import Context
-import pdfkit
-from xhtml2pdf import pisa
-from io import BytesIO
-import os
-from tempfile import NamedTemporaryFile
-from InvoiceGenerator.api import Invoice, Item, Client, Provider, Creator
-from InvoiceGenerator.pdf import SimpleInvoice
-from django.utils.html import strip_tags
-from django.core import mail
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
-from django.contrib import messages
-from django.shortcuts import get_object_or_404
-
 from django.shortcuts import redirect, reverse
 from django.db.models import Sum
 from django.core.mail import send_mail, BadHeaderError
@@ -607,7 +587,6 @@ def checkout_address(request):
 
     # return redirect('shop:cart')
     return render(request, 'app/checkout.html', context)
-
 
 
 def contact_us(request):
