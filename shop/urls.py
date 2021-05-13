@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
 from shop import views
-from shop.views import start
+# from shop.views import start
 
 app_name = 'shop'
 
@@ -35,4 +35,4 @@ urlpatterns = [
 ]
 
 
-start()
+# start()

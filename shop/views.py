@@ -45,10 +45,10 @@ def check_carts(request):
     return redirect('shop:cart')
 
 
-def start():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(check_carts_scheduler, 'interval', seconds=300)
-    scheduler.start()
+# def start():
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(check_carts_scheduler, 'interval', seconds=300)
+#     scheduler.start()
 
 @login_required
 def subscribe(request):
