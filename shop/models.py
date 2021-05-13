@@ -20,14 +20,11 @@ class Banner(models.Model):
     banner_image = models.ImageField(upload_to='banner', null=True)
 
 
-<<<<<<< HEAD
 class Logo(models.Model):
     logo_text = models.CharField(max_length=255)
     logo_image = models.ImageField(upload_to='logo', null=True)
 
 
-=======
->>>>>>> bfa9342ef85418fe623d8643d9f0e568b2766dc2
 class SubscriptionList(models.Model):
     subscribe_user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     subscribe_date_time = models.DateTimeField(auto_now=True,null=True,blank=True)
