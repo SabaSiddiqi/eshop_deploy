@@ -1,9 +1,6 @@
 from django.db import models
 from autoslug import AutoSlugField
-from countdowntimer_model.models import CountdownTimer
-import smtplib
 from django.utils import timezone
-from django.utils import timezone, dateformat
 from django.template.defaultfilters import slugify
 from tinymce import models as tinymce_models
 from django.conf import settings
@@ -253,7 +250,7 @@ class OrderUpdate(models.Model):
 
 
 class ContactUs(models.Model):
-    contact_id  = models.AutoField(primary_key=True)
+    contact_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     message = models.TextField()
