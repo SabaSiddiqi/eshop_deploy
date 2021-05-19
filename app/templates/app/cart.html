@@ -1,7 +1,6 @@
 {% extends "app/base_site.html" %}
 
 {% block title %} My Cart {% endblock title %}
-{% block title %} Tables {% endblock title %}
 {% block stylesheets %}
   {{ block.super }}
 {% endblock stylesheets %}
@@ -11,6 +10,7 @@
 <script>
 
     var timerData = [];
+    var refresh_status = true;
 
     function secondPassed(row) {
         var seconds = timerData[row].remaining;
@@ -26,11 +26,19 @@
 
 
             var c_s = {{cart.checkout_status|yesno:"true,false"}};
-            if (c_s){$("#countdown" + row).html("In Checkout");}
-            if (!c_s) {document.myform.submit();}
 
-<!--            $("#countdown" + row).html("Expiring Soon");-->
-            document.myform.submit();
+            if (c_s){
+                if (refresh_status){
+                    $("#countdown" + row).html("In Checkout");
+                    refresh_status = false;
+                }
+
+            }
+            else {
+                document.myform.submit();
+                refresh_status = true;
+            }
+
             clearInterval(interval);
             $("#add_" + row).show();
             $("#1add_" + row).show();
@@ -112,7 +120,7 @@ foreach($_SESSION["cart_item"] as $item) {
 <!--                      <th>-->
 <!--                        <input type="checkbox" id="check-all" class="flat">-->
 <!--                      </th>-->
-                        <th class="column-title">Product ID </th>
+                        <th class="column-title">ID </th>
                       <th class="column-title">Name </th>
                       <th class="column-title">Size </th>
                         <th class="column-title">Price </th>
@@ -160,8 +168,7 @@ foreach($_SESSION["cart_item"] as $item) {
                       </td>
 
                         <td  style="color:red;" id="countdown{{each_item.product_variant.variant.product_id }}" class="timer"></td>
-                        {{each_item.add_date_time}}
-
+                        {{cart.checkout_status}}
                         <p id="demo"></p>
 
 

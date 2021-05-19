@@ -517,9 +517,9 @@ def checkout_address(request):
     subs_query = SubscriptionList.objects.filter(subscribe_user=request.user)
 
     if request.method == "POST":
-        for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=False):
-            each_cart.checkout_status = True
-            each_cart.save()
+        # for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=False):
+        #     each_cart.checkout_status = True
+        #     each_cart.save()
         print("this")
         if request.POST.get("fullname"):
             fullname = request.POST.get("fullname")
@@ -662,6 +662,10 @@ def order_summary(request):
 
         user_cart_all = Cart_Items.objects.filter(cart = user_cart)
 
+        for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=False):
+            each_cart.checkout_status = True
+            each_cart.save()
+
         context = {'address_query': address_query.first(), 'user_cart':user_cart_all, 'cart':user_cart,
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
@@ -672,6 +676,11 @@ def order_summary(request):
         return render(request, 'app/order_summary.html', context)
 
     else:
+
+        for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=False):
+            each_cart.checkout_status = True
+            each_cart.save()
+
         return render(request, 'app/checkout.html')
 
     return render(request, 'app/checkout.html')

@@ -192,7 +192,7 @@ function myFunction(imgs) {
                     {% with variants.all|first as variant %}
 
                         {% with variant as sel %}
-                      <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
+                        <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
                     {% csrf_token %}
                     {% endwith %}
 

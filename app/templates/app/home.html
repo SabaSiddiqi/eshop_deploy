@@ -121,11 +121,12 @@
 {% block content %}
 
   <style>
+
     #banner img {
     width: 100%;
-    height: 100%;
-<!--    object-fit: cover;-->
+    object-fit: cover;
     overflow: hidden;
+
   }
 
 .MultiCarousel { float: left; overflow: hidden; padding: 5px; width: 100%; position:relative; }
@@ -154,8 +155,8 @@
           </div>
 
 
-          <div class="col-md-12 col-sm-12 col-xs-12">
-            <div  id="banner" class="demo-placeholder" style="height:300px; margin-top:-30px;">
+          <div class="col-md-12 col-sm-12 col-xs-12" style="width:100%; overflow:hidden; margin-top:-30px;">
+            <div  id="banner" class="demo-placeholder" style="width:100%; height:100%; ">
               <img src="/media/{{banner.banner_image}}" />
             </div>
           </div>

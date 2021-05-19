@@ -23,7 +23,7 @@ SECRET_KEY = '0zaa_lo3o@x2dn-cc@rqq+x@+kkj44-7cdv*@^g2xh5r^8is_*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['www.iyraseshop.com','iyraseshop.com',]
+ALLOWED_HOSTS = ['www.iyraseshop.com','iyraseshop.com','webapp-1109369.pythonanywhere.com',]
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     # "countdowntimer_model",
     'tinymce',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'chart_shirt.urls'
@@ -68,10 +70,22 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'social_django.context_processors.backends',  # <--
+                'social_django.context_processors.login_redirect', # <--
             ],
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.facebook.FacebookOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 
 WSGI_APPLICATION = 'chart_shirt.wsgi.application'
 
@@ -150,7 +164,8 @@ TINYMCE_DEFAULT_CONFIG = {
 
 
 
-STATICFILES_STORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #For email
@@ -167,6 +182,18 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "dashboard"
+
+
+SOCIAL_AUTH_FACEBOOK_KEY = '185246013367285'  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = '37209d75277945319b624f674bc24789'  # App Secret
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+'fields': 'name, email, age_range'
+}
+
+
+
 
 # awesome_website/settings.py
 
