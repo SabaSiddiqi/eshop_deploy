@@ -1,11 +1,13 @@
 {% extends "app/base_site.html" %}
+{% block title %} Terms & Conditions {% endblock title %}
+
 {% load static %}
 {% block content %}
   <div class="right_col" role="main">
     <div class="">
       <div class="page-title">
         <div class="title_left">
-          <h3>Shipping Details</h3>
+          <h3>Terms and Conditions</h3>
           <br>
         </div>
       </div>
@@ -15,7 +17,7 @@
           <div class="x_panel">
             <div class="x_content">
               <br />
-                <h2>{{value}}</h2>
+                <h2>{{value|safe}}</h2>
                 <div class="ln_solid"></div>
             </div>
           </div>

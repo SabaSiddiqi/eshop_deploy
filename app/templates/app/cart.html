@@ -168,7 +168,7 @@ foreach($_SESSION["cart_item"] as $item) {
                       </td>
 
                         <td  style="color:red;" id="countdown{{each_item.product_variant.variant.product_id }}" class="timer"></td>
-                        {{cart.checkout_status}}
+                        <!--{{cart.checkout_status}}-->
                         <p id="demo"></p>
 
 
@@ -185,9 +185,6 @@ foreach($_SESSION["cart_item"] as $item) {
                           return seconds;
                         }
 
-                        millisToMinutesAndSeconds(298999); // "4:59"
-                        millisToMinutesAndSeconds(60999);  // "1:01"
-
                         var date_time = "{{each_item.item_hold_time|date:"Y-m-d H:i:s"}}"
 
                         var date = new Date(date_time); // some mock date
@@ -195,7 +192,7 @@ foreach($_SESSION["cart_item"] as $item) {
                         var n = D.getTimezoneOffset() * 60000 ;
                         var G = date - D
                         var F = n - G
-                        var time_left = 1*60000 - F
+                        var time_left = 30*60000 - F
 
                         if (time_left >= 0) { timer({{each_item.product_variant.variant.product_id }}, (time_left/1000).toFixed(0)); }
                         if (time_left < 0) { timer({{each_item.product_variant.variant.product_id }}, 0); }
@@ -217,6 +214,7 @@ foreach($_SESSION["cart_item"] as $item) {
                   {% if user_cart|first %}
                   <button type="button" style="float:right;" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:order_summary' %}" >Checkout</a></button>
                   {% else %}
+                  <br/>
                   <button type="button" style="float:right;" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:ShopHome' %}" >Back to Shopping</a></button>
                   {% endif %}
 

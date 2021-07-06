@@ -6,6 +6,22 @@
   {{ block.super }}
 {% endblock stylesheets %}
 
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if successful_submit %}
+
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+
+{% endblock javascripts %}
+
+
+
 {% block content %}
 
 
@@ -56,10 +72,9 @@ function myFunction(imgs) {
                     {% endif %}
 
                     <div class="product_gallery" id="sub_image">
-                      <a><img src="/media/{{each_image.image}}" alt="..." onclick="myFunction(this);"/></a>
+                      <a><img style="margin-top:0px;"src="/media/{{each_image.image}}" alt="..." onclick="myFunction(this);"/></a>
                     </div>
                   {% endfor %}
-
 
               </div>
 
@@ -68,12 +83,16 @@ function myFunction(imgs) {
                 <h3 class="prod_title">{{product.brand}} - {{product.product_name}}</h3>
 
                 <p>{{product.product_desc}}</p>
+                <p><strong>Product Views:</strong> {{product.product_views}}</p>
+                {% for variant in selected_variant %}
+                <p><strong>Delivery Time:</strong>  {{variant.delivery_time}}</p>
+                {% endfor %}
                 <br />
 
                 <div class="">
                   <h2>Options  <small>Please select one</small></h2>
 
-                    <form method="post" action="{{each_variant.product_id}}">
+                    <form method="post" action="{% url 'shop:productview' id=product.product_id %}">
                       <ul class="list-inline prod_size">
 
                         {% for variant in selected_variant %}
@@ -88,8 +107,11 @@ function myFunction(imgs) {
                             <li><button type="submit" name="size" class="btn btn-default btn-s"
                                   value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
                           {% endif %}
-                          {% endfor %}
 
+
+                          {% endfor %}
+                          <br/>
+                            <p><strong> {{variant.num_available}} </strong> item(s) left in stock</p>
                         {% empty %}
 
                           {% with variants.all|first as variant %}
@@ -121,6 +143,8 @@ function myFunction(imgs) {
                           <span class="price-tax" style="">
                             <h3 style="text-decoration:line-through;">Rs. {{variant.price}}</h3>
                             <h3 style="color:red;"> {{variant.discount_percent}}% OFF </h3></span>
+
+
                           </div>
                       {% endif %}
 
@@ -168,41 +192,42 @@ function myFunction(imgs) {
 
                   {% for variant in selected_variant %}
 
-                    {% with variant as sel %}
-                      <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
-                    {% csrf_token %}
-                    {% endwith %}
+                        {% with variant as sel %}
+                          <form action="{% url 'shop:productview_details' id=sel.variant.product_id attribute_slug=sel.attribute.attribute_slug  %}" method="post">
+                        {% csrf_token %}
+                        {% endwith %}
+                        {% with ''|center:variant.num_available as range %}
+                          <select class="btn btn-default btn-lg" name="quantity">
+                            {% for _ in range %}
+                              <option> {{ forloop.counter }}</option>
+                            {% endfor %}
+                            </select>
+                        {% endwith %}
 
-                    {% with ''|center:variant.num_available as range %}
-                      <select class="btn btn-default btn-lg" name="quantity">
-                        {% for _ in range %}
-                          <option> {{ forloop.counter }}</option>
-                        {% endfor %}
-                        </select>
-                    {% endwith %}
+                        {% if variant.num_available < 1 %}
+                        <button type="submit" disabled  name="addtocart" value="variant" class="btn btn-default btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Sold Out</button>
+                        {% else %}
+                        <button type="submit" name="addtocart" value="variant" class="btn btn-default btn-success btn-lg" data-toggle="modal" data-target="#exampleModal">Add to Cart</button>
+                        {% endif %}
 
-                    {% if variant.num_available < 1 %}
-                    <button type="submit" disabled  name="addtocart" value="variant" class="btn btn-default btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Sold Out</button>
-                    {% else %}
-                    <button type="submit" name="addtocart" value="variant" class="btn btn-default btn-success btn-lg" data-toggle="modal" data-target="#exampleModal">Add to Cart</button>
-                    {% endif %}
+                        </form>
+
 
 
                   {% empty %}
                     {% with variants.all|first as variant %}
 
                         {% with variant as sel %}
-                        <form action="{% url 'shop:add_to_cart' product_id=sel.variant.product_id attribute=sel.attribute  %}" method="post">
-                    {% csrf_token %}
-                    {% endwith %}
-
-                      {% with ''|center:variant.num_available as range %}
-                      <select class="btn btn-default btn-lg" name="quantity">
-                      {% for _ in range %}
-                        <option> {{ forloop.counter }}</option>
-                      {% endfor %}
-                        </select>
-                    {% endwith %}
+                        <form action="{% url 'shop:productview_details' id=sel.variant.product_id attribute_slug=sel.attribute.attribute_slug  %}" method="post">
+                        {% csrf_token %}
+                        {% endwith %}
+                        {% with ''|center:variant.num_available as range %}
+                          <select class="btn btn-default btn-lg" name="quantity">
+                          {% for _ in range %}
+                            <option> {{ forloop.counter }}</option>
+                          {% endfor %}
+                            </select>
+                        {% endwith %}
 
                     {% if variant.num_available < 1 %}
                     <button type="submit" disabled  name="addtocart" value="variant" class="btn btn-default btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Sold Out</button>
@@ -212,21 +237,20 @@ function myFunction(imgs) {
 
                     {% endwith %}
 
+                  </form>
+
+
                     {% endfor %}
-
-
 <!--                     Modal-->
                     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                       <div class="modal-dialog" role="document">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h4 class="modal-title" id="exampleModalLabel">ADDED TO YOUR CART
+                            <h4 class="modal-title" id="exampleModalLabel">ADDED TO YOUR CART {{successful_submit}}
                             </h4>
-
-
-<!--                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                              <span aria-hidden="true">&times;</span>-->
-<!--                            </button>-->
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
                           </div>
                           <div class="modal-body">
 
@@ -235,7 +259,7 @@ function myFunction(imgs) {
                               <div class="col-md-4">
                                 {% for each_image in product_images %}
                                   {% if each_image.default %}
-                                        <img  src="/media/{{each_image.image}}" style="width:200px;">
+                                        <img  src="/media/{{each_image.image}}" style="width:200px; padding:15px;">
                                   {% endif %}
                                 {% endfor %}
                               </div>
@@ -243,20 +267,22 @@ function myFunction(imgs) {
 
                       {% if add_item.product_variant.apply_discount %}
 
-                              <div class="col-md-3" style="right-margin:30px;">
-                                <p><b>Item :</b> {{add_item.product_variant.variant}}</p>
+                              <div class="col-md-6 col-sm-6 col-xs-6" style="margin-left:10px;">
+                                  </br>
+                                <p><b>Item :</b> {{add_item.product_variant.variant.product_name}}</p>
                                 <p><b>Size : </b>{{add_item.product_variant.attribute}}</p>
-                                <p><b>Quantity </b>: {{add_item.product_quantity}}</p>
-                                <p><b>Price : </b> Rs. {{add_item.product_variant.discounted_price}} Rs. {{add_item.product_variant.price}}  {{add_item.product_variant.discount_percent}}% OFF </p>
+                                <p><b>Quantity in Cart </b>: {{add_item.product_quantity}}</p>
+                                <p><b>Price : </b> Rs. {{add_item.product_variant.discounted_price}} <strong style="text-decoration:line-through;">Rs. {{add_item.product_variant.price}}</strong>
+                                <strong style="color:red;">{{add_item.product_variant.discount_percent}}% OFF </strong></p>
                               </div>
 
                       {% endif %}
 
                       {% if add_item.product_variant.apply_discount != True %}
-                              <div class="col-md-3" style="right-margin:30px;">
-                                <p><b>Item :</b> {{add_item.product_variant.variant}}</p>
+                              <div class="col-md-6 col-sm-6 col-xs-6" style="margin-left:10px;">
+                                <p><b>Item :</b> {{add_item.product_variant.variant.product_name}}</p>
                                 <p><b>Size : </b>{{add_item.product_variant.attribute}}</p>
-                                <p><b>Quantity </b>: {{add_item.product_quantity}}</p>
+                                <p><b>Quantity in Cart </b>: {{add_item.product_quantity}}</p>
                                 <p><b>Price : </b> Rs. {{add_item.product_variant.price}}  </p>
                               </div>
                       {% endif %}
@@ -273,7 +299,6 @@ function myFunction(imgs) {
                         </div>
                       </div>
                     </div>
-                  </form>
                 </div>
 
 
@@ -282,11 +307,6 @@ function myFunction(imgs) {
 
 
               <div class="col-md-12">
-
-                <div class="" role="tabpanel" data-example-id="togglable-tabs">
-                  <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
-                  </ul>
-                </div>
 
               </div>
             </div>
@@ -297,15 +317,3 @@ function myFunction(imgs) {
   </div>
 {% endblock content %}
 
-{% block javascripts %}
-  {{ block.super }}
-    {% if successful_submit %}
-    Successful Submit {{successful_submit}}
-      <script type="text/javascript">
-          $(document).ready(function(){
-              $("#exampleModal").modal('show');
-          });
-      </script>
-  {% endif %}
-
-{% endblock javascripts %}

@@ -1,0 +1,33 @@
+{% extends "app/base_site.html" %}
+{% block title %} De {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>User Profile</h3>
+          <br>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_content">
+
+             <h2>Product Successfully Added!</h2>
+            <div>
+            <button type="button" style="" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:productadd' %}" >Add Another Product</a></button>
+            </div>
+            <div>
+            <button type="button" style="" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:imageupload' %}" >Add Images</a></button>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}

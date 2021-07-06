@@ -1,24 +1,29 @@
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from shop.models import *
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
-from django.contrib import messages
-from django.shortcuts import redirect, reverse
-from django.db.models import Sum
-from django.core.mail import send_mail, BadHeaderError
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime, timedelta
+import django
+# from django.conf import settings
+# from shop import shop_defaults
+
+import sys, os
+path = '/home/iyraseshop/iyraseshop'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chart_shirt.settings")
+django.setup()
 
 
+from shop.models import Cart, ProductVariant, Cart_Items, Constants
+from datetime import datetime
 
+print("I'm in task now up")
 for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
-# for each_cart in Cart.objects.filter(cart_ordered=False):
+    print("I'm in task now down")
     for each_item in Cart_Items.objects.filter(cart=each_cart):
         this_time = datetime.now() - each_item.item_hold_time.replace(tzinfo=None)
         total_seconds = this_time.total_seconds()
         minutes = total_seconds/60
+        print("Minutes", minutes)
         hold_time_query = Constants.objects.filter(constant_name='hold_time').first()
+        print("Hold Time query", hold_time_query)
         if minutes >= int(hold_time_query.constant_value):
             variant_for_cart = ProductVariant.objects.get(variant=each_item.product_variant.variant.product_id, attribute = each_item.product_variant.attribute)
             quantity = int(each_item.product_quantity)

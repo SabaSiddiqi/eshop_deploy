@@ -75,12 +75,12 @@
                 <div class="ln_solid"></div>
 
                 <div class="form-group">
-                  <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
                     {% if subs_query.subscribe_status %} <a class="btn btn-danger" href="{% url 'shop:unsubscribe' %}">Unsubscribe</a>
                     {% else %} <a class="btn btn-success" href="{% url 'shop:subscribe' %}">Subscribe</a>
                     {% endif %}
-                    <a class="btn btn-danger" href="{% url 'password_change' %}">Change Password</a>
-                    <button type="submit" class="btn btn-success" >Submit</button>
+                    <a style="margin-top:5px;" class="btn btn-danger" href="{% url 'password_change' %}">Change Password</a>
+                    <button style="margin-top:5px;" type="submit" class="btn btn-success" >Submit</button>
                   </div>
                 </div>
 

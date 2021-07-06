@@ -10,8 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
+
+import sys
+import django
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -29,21 +37,24 @@ ALLOWED_HOSTS = ['www.iyraseshop.com','iyraseshop.com','webapp-1109369.pythonany
 # Application definition
 
 INSTALLED_APPS = [
-
     'users',
+    'app.apps.AppConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop',
-    'app',
     'django.contrib.humanize',
+    'django.contrib.sites',
     # "countdowntimer_model",
+    'shop.apps.ShopConfig',
     'tinymce',
     'social_django',
+    'hitcount',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -191,8 +202,6 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 'fields': 'name, email, age_range'
 }
-
-
 
 
 # awesome_website/settings.py

@@ -9,6 +9,8 @@ from shop.views import subscribe, unsubscribe
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from shop.models import HtmlField, Logo
+from django.template.loader import render_to_string, get_template
+
 
 
 
@@ -30,42 +32,30 @@ def register(request):
             print("Form is valid")
             user = form.save()
             Cart.objects.create(author=user)
-            login(request, user)
+            login(request, user,  backend='django.contrib.auth.backends.ModelBackend')
             if request.POST.get("subscribe"):
                 SubscriptionList.objects.create(subscribe_user=request.user, subscribe_status=True)
             else:
                 SubscriptionList.objects.create(subscribe_user=request.user, subscribe_status=False)
             logo = Logo.objects.filter(logo_text='logo').first()
 
-            # msg_plain = render_to_string('../app/templates/app/account_created.txt', {'username': user.username})
-            # msg_html = render_to_string('../app/templates/app/account_created.html', {'username': user.username})
             ctx = {
-                'site':'http://127.0.0.1:8000',
+                'site':'https://www.iyraseshop.com',
                 'username': user.username,
                 'email': user.email,
                 'logo':logo.logo_image,
             }
 
-            from django.template.loader import render_to_string, get_template
 
             message = get_template('app/account_created.html').render(ctx)
             send_mail(
-                'email title',
+                "Iyra's Eshop - Account Created",
                 message,
                 'iyraseshop@gmail.com',
-                ['saba.siddiqui.2010@gmail.com'],
+                [user.email],
                 fail_silently=False,
                 html_message=message,)
 
-            # msg_plain = render_to_string('users/account_created.txt', {'username': user.username})
-            # msg_html = render_to_string('users/account_created.html', {'username': user.username})
-            #
-            # send_mail(
-            #     'email title',
-            #     msg_plain,
-            #     'iyraseshop@gmail.com', ['saba.siddiqui.2010@gmail.com'], fail_silently=False,
-            #     html_message=msg_html,
-            #     )
 
             return redirect(reverse("dashboard"))
         else:

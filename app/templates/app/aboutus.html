@@ -1,4 +1,6 @@
 {% extends "app/base_site.html" %}
+{% block title %} About Us {% endblock title %}
+
 {% load static %}
 {% block content %}
   <div class="right_col" role="main">
@@ -15,7 +17,7 @@
           <div class="x_panel">
             <div class="x_content">
               <br />
-                <h2>{{value}}</h2>
+                <h2>{{value|safe}}</h2>
                 <div class="ln_solid"></div>
             </div>
           </div>

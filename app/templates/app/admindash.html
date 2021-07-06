@@ -1,0 +1,227 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} My Cart {% endblock title %}
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if filter_button %}
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+{% endblock javascripts %}
+
+{% block content %}
+
+
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+<!--          <h3>Cart <small></small></h3>-->
+        </div>
+
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="row">
+
+        <div class="clearfix"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>My Shopping Cart</h2>
+              <div class="title_right" style="float:right;">
+                  <a class="btn btn-success" href="{% url 'shop:imageupload'  %}">Image(s) Upload</a>
+                <a class="btn btn-success" href="{% url 'shop:productadd'  %}">Add Product</a>
+                <button class="btn btn-default" type="button" data-toggle="modal" data-target="#exampleModal" >Filter & Sort</button>
+
+            </div>
+
+              <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+
+                <p>{{cart_hold_disclaimer|safe}}</p>
+
+
+              <div class="table-responsive">
+                <table class="table table-striped jambo_table bulk_action">
+                  <thead>
+                    <tr class="headings">
+                        <th class="column-title">ID</th>
+                        <th class="column-title">Img</th>
+                        <th class="column-title">Brand</th>
+                        <th class="column-title">Name </th>
+                        <th class="column-title">Category </th>
+                        <th class="column-title">Buy Price</th>
+                        <th class="column-title">Price</span></th>
+                        <th class="column-title">% OFF</span></th>
+                        <th class="column-title" >% Price</span></th>
+                        <th class="column-title" >Savings</span></th>
+                        <th class="column-title">Variant(s)</th>
+                        <th class="column-title">Pc(s)</th>
+                        <th class="column-title">SN</th>
+                        <th class="column-title">Update</th>
+                        <th class="column-title">Update</th>
+
+
+                      <th class="bulk-actions" colspan="7">
+                        <a class="antoo" style="color:#fff; font-weight:500;">Bulk Actions ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+
+                      {% for each_key,each_dict in mega_dict.items %}
+
+                                {% for each_variant in each_dict.variants %}
+
+                                <tr>
+                                <td>{{each_dict.product_image}}</td>
+                                <td style="width:75px;padding:2px;"><img style="width:70px;display:block;" src="/media/{{each_dict.product_image.image}}"></td>
+                                  <td>{{each_dict.product.brand}}</td>
+                                  <td>{{each_dict.product.product_name}}</td>
+                                  <td>{{each_dict.product.category}}</td>
+                                  <td>{{each_variant.buy_price}}</td>
+                                  <td>{{each_dict.product.price}}</td>
+                                <td>{{each_variant.discount_percent}}</td>
+                                <td>{{each_variant.discounted_price}}</td>
+                                <td>{{each_variant.savings_item}}</td>
+                                <td>{{each_variant.attribute}}</td>
+                                <td>{{each_variant.num_available}}</td>
+                                <td>{{each_variant.shipment}}</td>
+                                {% if each_dict.product.is_published %}
+                                <td><a class="btn btn-danger" href="{% url 'shop:unpublish' product_id=each_dict.product.product_id  %}">Unpublish</a></td>
+                                {% else %}
+                                 <td><a class="btn btn-success" href="{% url 'shop:publish' product_id=each_dict.product.product_id  %}">Publish</a></td>
+                                {% endif %}
+
+
+
+                                <td><a class="btn btn-success" href="{% url 'shop:productupdate' product_id=each_dict.product.product_id  %}">Update</a></td>
+
+                                </tr>
+                          {% endfor %}
+                        {% endfor %}
+
+
+                  </tbody>
+                </table>
+
+              </div>
+
+                <!-- Modal-->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="modal-title" id="exampleModalLabel">FILTERS
+                            </h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+
+                            <form id="demo-form2" name="filterform" method="post" data-parsley-validate class="form-horizontal form-label-left"  >
+                            {% csrf_token %}
+
+
+                                <div class="form-group">
+                                      <label class="control-label col-md-3 col-sm-3 col-xs-12">Sort By</label><span class="required"></span>
+                                      <div class="col-md-6 col-sm-6 col-xs-12">
+                                        <select name="sort_by" class="form-control">
+                                                {% for each_option in sortby_options %}
+                                              <option>{{each_option}}</option>
+                                              {% endfor %}}
+                                        </select>
+                                      </div>
+                                    </div>
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Attribute</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                     {% for each_attribute in sizes  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="variant" type="checkbox" value="{{each_attribute}}"> {{each_attribute}}
+                                    </div>
+                                    {% endfor %}
+
+                                  </div>
+                                </div>
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Category</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                    {% for each_cat in categories  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="category" type="checkbox" value="{{each_cat}}"> {{each_cat.cat_name}}
+                                    </div>
+                                    {% endfor %}
+
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Brand</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+
+                                    {% for each_brand in all_brands  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="brand" type="checkbox" value="{{each_brand}}"> {{each_brand.brand_name}}
+                                    </div>
+                                    {% endfor %}
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group modal-footer ">
+                                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button style="margin-top:5px;" type="submit" class="btn btn-success" >Apply Filters</button>
+                                  </div>
+                                </div>
+                                </form>
+
+
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+
+

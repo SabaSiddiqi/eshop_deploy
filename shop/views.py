@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from shop.models import *
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from django.shortcuts import redirect, reverse
@@ -9,6 +10,462 @@ from django.db.models import Sum
 from django.core.mail import send_mail, BadHeaderError
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
+from django.template.loader import render_to_string, get_template
+from django.core.files import File
+from datetime import date
+from datetime import datetime
+
+
+
+
+def trunc_at(s, d, n=2):
+    "Returns s truncated at the n'th (3rd by default) occurrence of the delimiter, d."
+    return d.join(s.split(d, n)[:n])
+
+@staff_member_required
+def product_image_upload(request):
+
+    if request.method == 'POST':
+        if request.FILES is None:
+            # print("No files uploaded")
+            pass
+        else:
+
+            file = request.FILES
+            filename = request.FILES['file']
+            print(file, filename)
+            album = ImageAlbum.objects.filter(name=trunc_at(str(filename),'_'))
+            if album.first():
+                pass
+            else:
+                ImageAlbum.objects.create(name=trunc_at(str(filename),'_'))
+
+            album_name = ImageAlbum.objects.get(name=trunc_at(str(filename),'_'))
+            b=str(filename).split('.')[0].split('_')[2]
+
+            if b =='1':
+                Image.objects.create(name=str(filename).split('.')[0], image=File(filename), default=True, album=album_name)
+            else:
+                Image.objects.create(name=str(filename).split('.')[0], image=File(filename), default=False, album=album_name)
+
+    context={
+
+        'categories': Category.objects.all(),
+        'image_album':ImageAlbum.objects.all(),
+        'all_brands':Brand.objects.all(),
+
+        }
+
+    return render(request, 'app/form_upload.html')
+
+@staff_member_required
+def product_add(request):
+    if request.method == 'POST':
+
+        if request.POST.get("product_name"):
+            product_name = request.POST.get("product_name")
+
+        if request.POST.get("product_desc"):
+            product_desc = request.POST.get("product_desc")
+
+        if request.POST.get("category"):
+            category = request.POST.get("category")
+            category = Category.objects.get(cat_name=category)
+
+
+        if request.POST.get("buy_price"):
+            buy_price = int(request.POST.get("buy_price"))
+
+        if request.POST.get("price"):
+            price = int(request.POST.get("price"))
+
+        if request.POST.get("apply_discount"):
+            apply_discount = bool(request.POST.get("apply_discount"))
+
+        if request.POST.get("discount_percent"):
+            discount_percent = int(request.POST.get("discount_percent"))
+
+        if request.POST.get("discount_price"):
+            discount_price = int(request.POST.get("discount_price"))
+
+        if request.POST.get("brand"):
+            brand = request.POST.get("brand")
+            brand=Brand.objects.get(brand_name=brand)
+
+        if request.POST.get("variant"):
+            variant = request.POST.getlist("variant")
+
+        if request.POST.getlist("quantity"):
+            quantity = request.POST.getlist("quantity")
+            print("Quan: ", quantity)
+
+        if request.POST.get("image_album"):
+            image_album_name = request.POST.get("image_album")
+            image_album=ImageAlbum.objects.get(name=image_album_name)
+
+
+        if request.POST.get("featured"):
+            featured = bool(request.POST.get("featured"))
+
+        if request.POST.get("delivery_time"):
+            delivery_time = request.POST.get("delivery_time")
+
+
+        #Add Product
+        n = Product.objects.create(
+            product_name=product_name,
+            product_desc=product_desc,
+            category=category,
+            price=price,
+            apply_discount=apply_discount,
+            discount_percent=discount_percent,
+            discounted_price=discount_price,
+            brand=brand,
+            publish_date=date.today(),
+            image=image_album,
+            is_featured=featured,
+            )
+
+        n.save()
+
+        for i in range(len(variant)):
+            each_variant=variant[i]
+            each_quantity=int(quantity[i])
+            ProductVariant.objects.create(
+            variant = Product.objects.get(product_id=n.pk),
+            attribute = Attribute.objects.get(attribute=each_variant, attribute_category=category),
+            delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time),
+            buy_price = buy_price,
+            price = price,
+            apply_discount = apply_discount,
+            discount_percent = discount_percent,
+            discounted_price = discount_price,
+            num_available=each_quantity)
+
+        return redirect('shop:admindash')
+
+    context={
+
+        'categories': Category.objects.all(),
+        'image_album':ImageAlbum.objects.all(),
+        'all_brands':Brand.objects.all(),
+        'attributes':Attribute.objects.all(),
+        'delivery_time':DeliveryTime.objects.all()
+
+        }
+
+    return render(request, 'app/add_product.html',context)
+
+
+@staff_member_required
+def product_update(request, product_id):
+    # print(list(request.POST.items()))
+
+    product = Product.objects.get(product_id = product_id)
+    variants = ProductVariant.objects.filter( variant = product.product_id)
+
+    #if post -> update the form
+
+    if request.method == 'POST':
+
+        if request.POST.get("product_name"):
+            product_name = request.POST.get("product_name")
+            product.product_name = product_name
+
+        if request.POST.get("product_desc"):
+            product_desc = request.POST.get("product_desc")
+            product.product_desc = product_desc
+
+        if request.POST.get("category"):
+            category = request.POST.get("category")
+            category = Category.objects.get(cat_name=category)
+            product.category = category
+
+        if request.POST.get("image_album"):
+            image_album_name = request.POST.get("image_album")
+            image_album=ImageAlbum.objects.get(name=image_album_name)
+            product.image = image_album
+
+        if request.POST.get("brand"):
+            brand = request.POST.get("brand")
+            brand=Brand.objects.get(brand_name=brand)
+            product.brand = brand
+
+
+        product.save()
+
+        for each_variant in variants:
+            print(each_variant.id)
+            if request.POST.get(str(each_variant.id)+"_"+"buy_price"):
+                buy_price = int(request.POST.get(str(each_variant.id)+"_"+"buy_price"))
+                each_variant.buy_price = buy_price
+
+            if request.POST.get(str(each_variant.id)+"_"+"price"):
+                price = int(request.POST.get(str(each_variant.id)+"_"+"price"))
+                each_variant.price = price
+
+            if request.POST.get(str(each_variant.id)+"_"+"apply_discount"):
+                apply_discount = bool(request.POST.get(str(each_variant.id)+"_"+"apply_discount"))
+                # each_variant.apply_discount = apply_discount
+
+            if request.POST.get(str(each_variant.id)+"_"+"discount_percent"):
+                discount_percent = int(request.POST.get(str(each_variant.id)+"_"+"discount_percent"))
+                each_variant.discount_percent = discount_percent
+
+            if request.POST.get(str(each_variant.id)+"_"+"discount_price"):
+                discount_price = int(request.POST.get(str(each_variant.id)+"_"+"discount_price"))
+                each_variant.discounted_price = discount_price
+
+            # if request.POST.get(str(each_variant.id)+"_"+"variant"):
+            #     variant = request.POST.getlist(str(each_variant.id)+"_"+"variant")
+
+            if request.POST.get(str(each_variant.id)+"_"+"quantity"):
+                print("I have the quantity")
+                quantity = request.POST.get(str(each_variant.id)+"_"+"quantity")
+                print("And the quantity is", quantity)
+                each_variant.num_available = int(quantity)
+
+            if request.POST.get(str(each_variant.id)+"_"+"featured"):
+                featured = bool(request.POST.get(str(each_variant.id)+"_"+"featured"))
+
+            if request.POST.get(str(each_variant.id)+"_"+"delivery_time"):
+                delivery_time = request.POST.get(str(each_variant.id)+"_"+"delivery_time")
+                each_variant.delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time)
+
+            each_variant.save()
+            return redirect('shop:admindash')
+
+    #else
+
+    context = {'product':product,
+                'variants':variants,
+                'categories': Category.objects.all(),
+                'image_album':ImageAlbum.objects.all(),
+                'all_brands':Brand.objects.all(),
+                'attributes':Attribute.objects.all(),
+                'delivery_time':DeliveryTime.objects.all()
+
+                }
+
+    return render(request, 'app/product_update.html', context)
+
+
+@staff_member_required
+def remove_variant(request, variant_id):
+
+    ProductVariant.objects.get( pk=variant_id).delete()
+
+    return redirect('shop:admindash')
+
+
+@staff_member_required
+def add_variant(request, product_id):
+
+    product = Product.objects.get(product_id = product_id)
+    variants = ProductVariant.objects.filter( variant = product.product_id)
+
+    if request.method == 'POST':
+
+        if request.POST.get("buy_price"):
+            buy_price = int(request.POST.get("buy_price"))
+
+        if request.POST.get("price"):
+            price = int(request.POST.get("price"))
+
+        if request.POST.get("apply_discount"):
+            apply_discount = bool(request.POST.get("apply_discount"))
+
+        if request.POST.get("discount_percent"):
+            discount_percent = int(request.POST.get("discount_percent"))
+
+        if request.POST.get("discount_price"):
+            discount_price = int(request.POST.get("discount_price"))
+
+        if request.POST.get("variant"):
+            variant = request.POST.getlist("variant")
+
+        if request.POST.getlist("quantity"):
+            quantity = request.POST.getlist("quantity")
+            print("Quan: ", quantity)
+
+        if request.POST.get("delivery_time"):
+            delivery_time = request.POST.get("delivery_time")
+
+        for i in range(len(variant)):
+            print("Variant", variant)
+            each_variant=variant[i]
+            print("Each Variant",each_variant)
+            each_quantity=int(quantity[i])
+            ProductVariant.objects.create(
+            variant = product,
+            attribute = Attribute.objects.get(attribute=each_variant, attribute_category=product.category ),
+            delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time),
+            buy_price = buy_price,
+            price = price,
+            apply_discount = apply_discount,
+            discount_percent = discount_percent,
+            discounted_price = discount_price,
+            num_available=each_quantity)
+
+        return redirect('shop:admindash')
+
+    context = {'product':product,
+            'variants':variants,
+            'categories': Category.objects.all(),
+            'image_album':ImageAlbum.objects.all(),
+            'all_brands':Brand.objects.all(),
+            'attributes':Attribute.objects.filter(attribute_category = product.category),
+            'delivery_time':DeliveryTime.objects.all()
+
+            }
+
+    return render(request, 'app/add_variant.html', context)
+
+
+
+
+@staff_member_required
+def admin_dashboard(request):
+
+    mega_dict={}
+
+    all_products = Product.objects.all()
+
+    if request.POST.get("variant") and not(request.POST.get("brand")) and not(request.POST.get("category")):
+        variant = request.POST.getlist("variant")
+        filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+        list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+        all_products = Product.objects.filter(product_id__in=list(list_values))
+
+    if request.POST.get("category") and not(request.POST.get("brand")) and not(request.POST.get("variant")):
+        categories = request.POST.getlist("category")
+        filtered_categories = Category.objects.filter(cat_name__in=categories)
+        # all_products = Product.objects.filter(category__in=list(filtered_categories)).values_list('category', flat=True)
+        all_products = Product.objects.filter(category__in=list(filtered_categories))
+
+
+    if request.POST.get("brand") and not(request.POST.get("category")) and not(request.POST.get("variant")):
+        brands = request.POST.getlist("brand")
+        filtered_brands = Brand.objects.filter(brand_name__in=brands)
+        # all_products = Product.objects.filter(category__in=list(filtered_categories)).values_list('category', flat=True)
+        all_products = Product.objects.filter(brand__in=list(filtered_brands))
+
+
+
+    if request.POST.get("brand") and request.POST.get("category") and not(request.POST.get("variant")):
+        categories = request.POST.getlist("category")
+        filtered_categories = Category.objects.filter(cat_name__in=categories)
+        brands = request.POST.getlist("brand")
+        filtered_brands = Brand.objects.filter(brand_name__in=brands)
+        # all_products = Product.objects.filter(category__in=list(filtered_categories)).values_list('category', flat=True)
+        all_products = Product.objects.filter(category__in=list(filtered_categories),brand__in=list(filtered_brands) )
+
+    if request.POST.get("brand") and request.POST.get("variant") and not(request.POST.get("category")):
+
+        variant = request.POST.getlist("variant")
+        filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+        list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+
+        brands = request.POST.getlist("brand")
+        filtered_brands = Brand.objects.filter(brand_name__in=brands)
+        all_products = Product.objects.filter(brand__in=list(filtered_brands),product_id__in=list(list_values))
+
+
+    if request.POST.get("variant") and request.POST.get("category") and not(request.POST.get("brand")):
+
+        variant = request.POST.getlist("variant")
+        filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+        list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+
+        categories = request.POST.getlist("category")
+        filtered_categories = Category.objects.filter(cat_name__in=categories)
+        all_products = Product.objects.filter(category__in=list(filtered_categories),product_id__in=list(list_values))
+
+    if request.POST.get("variant") and request.POST.get("category") and request.POST.get("brand"):
+
+        variant = request.POST.getlist("variant")
+        filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+        list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+
+        brands = request.POST.getlist("brand")
+        filtered_brands = Brand.objects.filter(brand_name__in=brands)
+
+        categories = request.POST.getlist("category")
+        filtered_categories = Category.objects.filter(cat_name__in=categories)
+
+        all_products = Product.objects.filter(category__in=list(filtered_categories), brand__in=list(filtered_brands),product_id__in=list(list_values))
+
+
+
+    cat_object = Category.objects.get(cat_name='Cosmetics')
+    cosmetics = Product.objects.filter(category=cat_object, is_published=True)
+
+    filtered_products = Product.objects.exclude(category=cat_object)
+
+    sizes = []
+    for each_product in filtered_products:
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+        for each_variant in variants:
+            sizes.append(each_variant.attribute.attribute)
+
+    sizes = set(sizes)
+
+    all_products = all_products.order_by('-updated_at')
+    if request.POST.get("sort_by"):
+
+        sortby = request.POST.get("sort_by")
+        print("SORTBY", sortby)
+
+        if sortby == 'Price(High to Low)':
+            all_products = all_products.order_by('-discounted_price')
+
+        if sortby == 'Price(Low to High)':
+            all_products = all_products.order_by('discounted_price')
+
+        if sortby == 'Recently Added':
+            all_products = all_products.order_by('-updated_at')
+
+        if sortby == '% OFF':
+            all_products = all_products.order_by('discount_percent')
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
+
+
+
+
+
+    context = {
+        'all_products':Product.objects.all(),
+        'product_variants':ProductVariant.objects.all(),
+        'sub_sub_categories': Sub_Sub_Category.objects.all(),
+        'sub_categories':Sub_Category.objects.all(),
+        'categories': Category.objects.all(),
+        'header_text':'All Products',
+        'all_brands':Brand.objects.all(),
+         'mega_dict': mega_dict,
+          'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+          'sizes':sizes,
+    }
+
+    return render(request, 'app/admindash.html', context)
+
+
 
 
 def check_carts_scheduler():
@@ -71,7 +528,7 @@ def shipping(request):
     shipping_query = HtmlField.objects.filter(hf_name='shipping').first()
 
     context = {
-        'value': shipping_query.my_field,
+        'value': shipping_query.hf_value,
         'sub_sub_categories': Sub_Sub_Category.objects.all(),
         'sub_categories':Sub_Category.objects.all(),
         'categories': Category.objects.all(),
@@ -113,9 +570,10 @@ def terms_conditions(request):
 
     return render(request, 'app/terms_conditions.html', context)
 
+
 def aboutus(request):
 
-    aboutus_query = HtmlField.objects.filter(hf_name='payment_methods').first()
+    aboutus_query = HtmlField.objects.filter(hf_name='aboutus').first()
 
     context = {
         'value': aboutus_query.hf_value ,
@@ -129,15 +587,40 @@ def aboutus(request):
     return render(request, 'app/aboutus.html', context)
 
 
+
+def publish(request, product_id):
+    product = Product.objects.get(product_id = product_id)
+    product.is_published = True
+    product.save()
+    return redirect('shop:admindash')
+
+
+def unpublish(request, product_id):
+    product = Product.objects.get(product_id = product_id)
+    product.is_published = False
+    product.save()
+    return redirect('shop:admindash')
+
+
+
 def shopHome(request):
 
+    cat_object = Category.objects.get(cat_name='Cosmetics')
+    cosmetics = Product.objects.filter(category=cat_object, is_published=True)
+
+
+    all_products = Product.objects.exclude(category=cat_object)
+    all_products = all_products.filter(is_published=True)
+
     context = {'banner': Banner.objects.all().first(),
-               'all_products': Product.objects.all(), 'images': Image.objects.all(),
+               'all_products': all_products,
+               'images': Image.objects.all(),
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'header_text':'All Products',
-               'all_brands':Brand.objects.all(),}
+               'all_brands':Brand.objects.all(),
+               'cosmetics' : cosmetics,}
 
     return render(request, 'app/home.html', context)
 
@@ -148,17 +631,59 @@ def filter_by_cat(request, category):
 
     if cat_query.first():
         cat_id = Category.objects.filter(cat_slug=category).first()
-        all_products = Product.objects.filter(category=cat_id.id)
+        all_products = Product.objects.filter(category=cat_id.id, is_published=True).order_by('-updated_at')
+
+
+        sizes = None
+
+        if category != "cosmetics":
+            sizes = []
+            for each_product in all_products:
+                variants = ProductVariant.objects.filter( variant = each_product.product_id)
+                for each_variant in variants:
+                    sizes.append(each_variant.attribute.attribute)
+
+            sizes = set(sizes)
+
+            if request.POST.get("variant"):
+                variant = request.POST.getlist("variant")
+                filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+                list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+                all_products = Product.objects.filter(product_id__in=list(list_values),category=cat_id.id)
+
+        if request.POST.get("sort_by"):
+            sortby = request.POST.get("sort_by")
+            print("SORTBY", sortby)
+
+            if sortby == 'Price(High to Low)':
+                all_products = all_products.order_by('-discounted_price')
+
+            if sortby == 'Price(Low to High)':
+                all_products = all_products.order_by('discounted_price')
+
+            if sortby == 'Recently Added':
+                all_products = all_products.order_by('-updated_at')
+
+            if sortby == '% OFF':
+                all_products = all_products.order_by('-discount_percent')
 
     else:
         all_products = None
+
+
+
 
     context = {'all_products': all_products, 'images': Image.objects.all(),
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),
-               'header_text':cat_query.first().cat_name}
+               'header_text':cat_query.first().cat_name,
+               'filter_button':False,
+               'sizes':sizes,
+                'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+                'category':Category.objects.filter(cat_slug=category).first(),
+               }
 
     return render(request, 'app/home_searchby.html', context)
 
@@ -169,7 +694,38 @@ def filter_by_brand(request, brand):
 
     if brand_query.first():
         brand_name = Brand.objects.filter(brand_slug=brand).first()
-        all_products = Product.objects.filter(brand=brand_name)
+        all_products = Product.objects.filter(brand=brand_name, is_published=True).order_by('-updated_at')
+
+        if brand != "e.l.f":
+            sizes = []
+            for each_product in all_products:
+                variants = ProductVariant.objects.filter( variant = each_product.product_id)
+                for each_variant in variants:
+                    sizes.append(each_variant.attribute.attribute)
+
+            if request.POST.get("variant"):
+                variant = request.POST.getlist("variant")
+                filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+                list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+                all_products = Product.objects.filter(product_id__in=list(list_values),brand=brand_name.id)
+
+        if request.POST.get("sort_by"):
+            sortby = request.POST.get("sort_by")
+            print("SORTBY", sortby)
+
+            if sortby == 'Price(High to Low)':
+                all_products = all_products.order_by('-discounted_price')
+
+            if sortby == 'Price(Low to High)':
+                all_products = all_products.order_by('discounted_price')
+
+            if sortby == 'Recently Added':
+                all_products = all_products.order_by('-updated_at')
+
+            if sortby == '% OFF':
+                all_products = all_products.order_by('discount_percent')
+
+
 
     else:
         all_products = None
@@ -179,7 +735,11 @@ def filter_by_brand(request, brand):
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'header_text':brand_query.first().brand_name,
-               'all_brands':Brand.objects.all(),}
+               'all_brands':Brand.objects.all(),
+              'sizes':set(sizes),
+                'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+                'brand':Brand.objects.filter(brand_slug=brand).first(),
+               }
 
     return render(request, 'app/home_searchby.html', context)
 
@@ -211,6 +771,8 @@ def filter_by_subcat(request, category, sub_category):
 
 @never_cache
 def productview(request, id):
+
+
     if request.method == "POST":
         if request.POST.get("size"):
             size = request.POST['size']
@@ -221,121 +783,158 @@ def productview(request, id):
             product_images = Image.objects.filter(album=image_value)
             attribute = Attribute.objects.filter(attribute=size).first()
             selected_variant = ProductVariant.objects.filter(variant=product.product_id, attribute = attribute)
+            attribute_slug = attribute.attribute_slug
+            return redirect(f'/productview/{id}/{attribute_slug}/')
 
-        else:
-            product = Product.objects.filter(product_id=id).first()
-            variants = ProductVariant.objects.filter( variant = product.product_id)
-            image_value = getattr(product, "image")
-            product_images = Image.objects.filter(album=image_value)
-            selected_variant = ""
 
     else:
         product = Product.objects.filter(product_id=id).first()
-        variants = ProductVariant.objects.filter( variant = product.product_id)
-        image_value = getattr(product, "image")
-        product_images = Image.objects.filter(album=image_value)
-        selected_variant = ""
+        variant = ProductVariant.objects.filter( variant = product.product_id).first()
+        attribute_slug = variant.attribute.attribute_slug
+        return redirect(f'/productview/{id}/{attribute_slug}/')
 
-    context = {'product': product, 'product_images': product_images,
-               'variants':variants, 'selected_variant': selected_variant,
-               'successful_submit': False,
-                'sub_sub_categories': Sub_Sub_Category.objects.all(),
-               'sub_categories':Sub_Category.objects.all(),
-               'categories': Category.objects.all(),
-               'all_brands':Brand.objects.all(),}
+import hitcount # import entire package
+from hitcount.models import HitCount
+from hitcount.views import HitCountDetailView
+from django.views import generic
+from django.shortcuts import get_object_or_404
+from hitcount.utils import get_hitcount_model
 
-    return render(request, 'app/productview.html', context)
+# @never_cache
+def productview_details(request, id, attribute_slug):
+
+    product = Product.objects.filter(product_id=id).first()
+    variants = ProductVariant.objects.filter( variant = product.product_id)
+    image_value = getattr(product, "image")
+    product_images = Image.objects.filter(album=image_value)
+    attribute = Attribute.objects.filter(attribute_slug=attribute_slug).first()
+    selected_variant = ProductVariant.objects.filter(variant=product.product_id, attribute = attribute)
+
+
+
+    product_hit = get_object_or_404(Product, product_id=id)
+    context = {}
+
+    # hitcount logic
+    hit_count = get_hitcount_model().objects.get_for_object(product_hit)
+
+    hits = hit_count.hits
+    context = {}
+    hitcontext = context['hitcount'] = {'pk': hit_count.pk}
+    hit_count_response = hitcount.views.HitCountMixin.hit_count(request, hit_count)
+    count_hit = True
+
+    if hit_count_response.hit_counted:
+        hits = hits + 1
+        hitcontext['hit_counted'] = hit_count_response.hit_counted
+        hitcontext['hit_message'] = hit_count_response.hit_message
+        hitcontext['total_hits'] = hits
+
+    product_hit.product_views = hits
+    product_hit.save()
+
+
+
+    if request.method == "POST":
+        if request.POST.get("addtocart"):
+            # if request.user.is_authenticated:
+            # add_to_cart(request, id, attribute_slug)
+            return add_to_cart(request, id, attribute_slug)
+
+        else:
+            context = {'product': product, 'product_images': product_images,
+           'variants':variants,
+           'selected_variant': selected_variant,
+            # 'successful_submit': False,
+           'sub_sub_categories': Sub_Sub_Category.objects.all(),
+           'sub_categories':Sub_Category.objects.all(),
+           'categories': Category.objects.all(),
+           'all_brands':Brand.objects.all(),
+           'hit_count':hit_count,}
+
+            return render(request, 'app/productview.html', context)
+
+    else:
+
+        context = {'product': product, 'product_images': product_images,
+       'variants':variants,
+       'selected_variant': selected_variant,
+    #   'successful_submit': False,
+       'sub_sub_categories': Sub_Sub_Category.objects.all(),
+       'sub_categories':Sub_Category.objects.all(),
+       'categories': Category.objects.all(),
+       'all_brands':Brand.objects.all(),
+       'hit_count':hit_count,}
+
+        return render(request, 'app/productview.html', context)
 
 
 
 @login_required
-def add_to_cart(request, product_id, attribute):
+def add_to_cart(request, product_id, attribute_slug):
+
+    for each_cart in Cart.objects.filter(cart_ordered=False, author=request.user, checkout_status=True):
+        each_cart.checkout_status = False
+        each_cart.save()
 
     id = product_id
-    cart_query = None
 
-    if request.method == "POST":
+    product = Product.objects.filter(product_id=id).first()
+    variants = ProductVariant.objects.filter( variant = product.product_id)
+    image_value = getattr(product, "image")
+    product_images = Image.objects.filter(album=image_value)
+    attribute = Attribute.objects.filter(attribute_slug=attribute_slug, attribute_category=product.category).first()
+    selected_variant = ProductVariant.objects.filter(variant=product.product_id, attribute = attribute)
 
-        if request.POST.get("size"):
-            size = request.POST['size']
-            print(size)
-            product = Product.objects.filter(product_id=id).first()
-            variants = ProductVariant.objects.filter( variant = product.product_id)
-            image_value = getattr(product, "image")
-            product_images = Image.objects.filter(album=image_value)
-            attribute = Attribute.objects.filter(attribute=size).first()
-            selected_variant = ProductVariant.objects.filter(variant=product.product_id, attribute = attribute)
-            submit_flag = False
+    print("I'm in add to cart 2")
+    variant = request.POST['addtocart']
+    print("Variant", variant)
+    quantity = request.POST['quantity']
+    print("Quantity", quantity)
 
-        else:
-            product = Product.objects.filter(product_id=id).first()
-            variants = ProductVariant.objects.filter( variant = product.product_id)
-            image_value = getattr(product, "image")
-            product_images = Image.objects.filter(album=image_value)
-            selected_variant = ""
-            submit_flag = False
+    product = Product.objects.filter(product_id=id).first()
+    print(product, product.category)
+    attribute = Attribute.objects.filter(attribute_slug=attribute_slug, attribute_category=product.category).first()
+    print("attribute",attribute)
+    variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
+
+
+    user_cart_query = Cart.objects.filter(author= request.user, cart_ordered = False)
+
+    if user_cart_query.first():
+        print("Cart Exists")
+        user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
+    else:
+        print("New Cart Created")
+        Cart.objects.create(author=request.user)
+        user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
+
+    cart_query = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart)
+
+    if cart_query.first():
+        print("Already exists")
+        cart_query = Cart_Items.objects.get(cart = user_cart, product_variant = variant_for_cart)
+        cart_query.product_quantity = int(cart_query.product_quantity) + int(quantity)  # change field
+        cart_query.item_hold_time = timezone.now()
+        cart_query.save() # this will update only
 
     else:
-        product = Product.objects.filter(product_id=id).first()
-        variants = ProductVariant.objects.filter( variant = product.product_id)
-        image_value = getattr(product, "image")
-        product_images = Image.objects.filter(album=image_value)
-        selected_variant = ""
-        submit_flag = False
-        cart_query = None
+        print("Does not exist")
+        Cart_Items.objects.create(cart = user_cart, product_variant = variant_for_cart, product_quantity = quantity, item_hold_time = timezone.now())
 
-    if request.method == "POST":
-        print("Product_ID", product_id)
-        print("attribute", attribute)
-        print("I'm in add to cart")
+    variant_for_cart.num_available = variant_for_cart.num_available - int(quantity)
+    variant_for_cart.save()
+    messages.success(request, "Cart updated!")
+    submit_flag = True
+    selected_variant = ProductVariant.objects.filter(variant=product, attribute = attribute)
 
-        if request.POST.get("addtocart"):
-            print("I'm in add to cart 2")
-            variant = request.POST['addtocart']
-            print("Variant", variant)
-            quantity = request.POST['quantity']
-            print("Quantity", quantity)
-
-            product = Product.objects.filter(product_id=product_id).first()
-            attribute = Attribute.objects.filter(attribute=attribute).first()
-            variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
-
-            user_cart_query = Cart.objects.filter(author= request.user, cart_ordered = False)
-
-            if user_cart_query.first():
-                print("Cart Exists")
-                user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
-            else:
-                print("New Cart Created")
-                Cart.objects.create(author=request.user)
-                user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
-
-            cart_query = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart)
-
-            if cart_query.first():
-                print("Already exists")
-                cart_query = Cart_Items.objects.get(cart = user_cart, product_variant = variant_for_cart)
-                cart_query.product_quantity = int(cart_query.product_quantity) + int(quantity)  # change field
-                cart_query.item_hold_time = datetime.now()
-                cart_query.save() # this will update only
-
-            else:
-                print("Does not exist")
-                Cart_Items.objects.create(cart = user_cart, product_variant = variant_for_cart, product_quantity = quantity, item_hold_time = datetime.now())
-
-            variant_for_cart.num_available = variant_for_cart.num_available - int(quantity)
-            variant_for_cart.save()
-            messages.success(request, "Cart updated!")
-            submit_flag = True
-            selected_variant = ProductVariant.objects.filter(variant=product, attribute = attribute)
-
-            cart_query = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart).first()
-            if variant_for_cart.apply_discount:
-                cart_query.total_amount = int(cart_query.product_quantity) * variant_for_cart.discounted_price
-            else:
-                cart_query.total_amount = int(cart_query.product_quantity) * variant_for_cart.price
-            cart_query.save()
-            print(cart_query)
+    cart_query = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart).first()
+    if variant_for_cart.apply_discount:
+        cart_query.total_amount = int(cart_query.product_quantity) * variant_for_cart.discounted_price
+    else:
+        cart_query.total_amount = int(cart_query.product_quantity) * variant_for_cart.price
+    cart_query.save()
+    print(cart_query)
 
     context = {'product': product,
                'product_images': product_images,
@@ -356,7 +955,7 @@ def add_to_cart(request, product_id, attribute):
 def remove_item(request , product_id, attribute):
 
     product = Product.objects.filter(product_id=product_id).first()
-    attribute = Attribute.objects.filter(attribute=attribute).first()
+    attribute = Attribute.objects.filter(attribute=attribute, attribute_category=product.category).first()
     variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
 
     user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
@@ -392,7 +991,7 @@ def add_quantity(request, product_id, attribute):
         each_cart.save()
 
     product = Product.objects.filter(product_id=product_id).first()
-    attribute = Attribute.objects.filter(attribute=attribute).first()
+    attribute = Attribute.objects.filter(attribute=attribute, attribute_category=product.category).first()
     variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
 
     user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
@@ -404,7 +1003,7 @@ def add_quantity(request, product_id, attribute):
             cart_query.product_quantity = int(cart_query.product_quantity) + 1  # change field
             variant_for_cart.num_available = int(variant_for_cart.num_available) - 1
             print("Num available", variant_for_cart.num_available)
-            cart_query.item_hold_time = datetime.now()
+            cart_query.item_hold_time = timezone.now()
             cart_query.save()
             variant_for_cart.save()
 
@@ -429,7 +1028,7 @@ def minus_quantity(request, product_id, attribute):
 
 
     product = Product.objects.filter(product_id=product_id).first()
-    attribute = Attribute.objects.filter(attribute=attribute).first()
+    attribute = Attribute.objects.filter(attribute=attribute, attribute_category=product.category).first()
     variant_for_cart = ProductVariant.objects.get( variant=product, attribute = attribute)
 
     user_cart = Cart.objects.get(author=request.user, cart_ordered = False)
@@ -441,7 +1040,7 @@ def minus_quantity(request, product_id, attribute):
         if int(cart_query.product_quantity) >= 1:
             cart_query.product_quantity = int(cart_query.product_quantity) - 1  # change field
             variant_for_cart.num_available = int(variant_for_cart.num_available) + 1
-            cart_query.item_hold_time = datetime.now()
+            cart_query.item_hold_time = timezone.now()
             cart_query.save()
             variant_for_cart.save()
         if int(cart_query.product_quantity) < 1:
@@ -568,12 +1167,6 @@ def checkout_address(request):
                     'categories': Category.objects.all(),
                     'all_brands':Brand.objects.all(),}
 
-        # return redirect('shop:cart')
-        context ={'address_query':address_query.first(),
-                  'subs_query':subs_query.first(),
-              'sub_sub_categories': Sub_Sub_Category.objects.all(),
-               'sub_categories':Sub_Category.objects.all(),
-               'categories': Category.objects.all()}
         return render(request, 'app/checkout.html', context)
 
 
@@ -617,7 +1210,7 @@ def contact_us(request):
 
         try:
             print("Email Sent")
-            send_mail(subject, message, 'iyraseshop@gmail.com', ['saba.siddiqui.2010@gmail.com'], fail_silently=False)
+            send_mail(subject, message, 'iyraseshop@gmail.com', ['iyraseshop@gmail.com'], fail_silently=False)
         except BadHeaderError:
             print("Bad Error")
             return HttpResponse('Invalid header found.')
@@ -653,7 +1246,7 @@ def contact_us(request):
 @login_required
 def order_summary(request):
 
-    cart_hold_disclaimer = HtmlField.objects.filter(hf_name='cart_hold_disclaimer').first()
+    checkout_disclaimer = HtmlField.objects.filter(hf_name='checkout_disclaimer_text').first()
 
     address_query = DeliveryAddress.objects.filter(author=request.user)
     user_cart = Cart.objects.filter(author=request.user,cart_ordered = False).first()
@@ -671,7 +1264,7 @@ def order_summary(request):
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'all_brands':Brand.objects.all(),
-               'cart_hold_disclaimer':cart_hold_disclaimer.hf_value,}
+               'checkout_disclaimer':checkout_disclaimer.hf_value,}
 
         return render(request, 'app/order_summary.html', context)
 
@@ -686,6 +1279,7 @@ def order_summary(request):
     return render(request, 'app/checkout.html')
 
 @login_required
+@never_cache
 def placeorder(request):
     # update cart Item times
 
@@ -694,10 +1288,41 @@ def placeorder(request):
 
     if user_cart.first():
         user_cart = Cart.objects.filter(author=request.user,cart_ordered = False).first()
-        UserOrder.objects.create(author = request.user, order_cart = user_cart, order_address = user_address)
-        user_cart.cart_ordered = True
-        user_cart_all = Cart_Items.objects.filter(cart=user_cart)
-        user_cart.save()
+
+
+        if Cart_Items.objects.filter(cart = user_cart).first():
+
+            UserOrder.objects.create(author = request.user, order_cart = user_cart, order_address = user_address)
+            user_cart.cart_ordered = True
+            user_cart_all = Cart_Items.objects.filter(cart=user_cart)
+            user_cart.save()
+
+        else:
+            # return HttpResponse('Your cart is empty')
+            return redirect('shop:cart')
+
+
+        logo = Logo.objects.filter(logo_text='logo').first()
+
+        ctx = {
+            'site':'https://www.iyraseshop.com',
+            'username': request.user.username,
+            'email': request.user.email,
+            'logo':logo.logo_image,
+            'user_cart': user_cart_all,
+            'cart': user_cart,
+            }
+
+
+        message = get_template('app/order_placed_email.html').render(ctx)
+        send_mail(
+            "Iyra's Eshop - Order Placed",
+            message,
+            'iyraseshop@gmail.com',
+            [request.user.email],
+            fail_silently=False,
+            html_message=message,)
+
 
         context = {'user_cart': user_cart_all,
                    'cart': user_cart,
@@ -708,7 +1333,8 @@ def placeorder(request):
         return render(request, 'app/placeorder.html', context)
 
     else:
-        return HttpResponse('Nothing to order')
+        # return HttpResponse('Nothing to order')
+        return redirect('shop:cart')
 
 
 @login_required

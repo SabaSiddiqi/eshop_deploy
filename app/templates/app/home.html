@@ -3,6 +3,8 @@
 
 {% block title %} Shop Global Brands In Pakistan {% endblock title %}
 
+
+
 {% block stylesheets %}
   {{ block.super }}
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
@@ -170,7 +172,7 @@
       <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel tile" style="height:360px;">
           <div class="x_title">
-            <h2>Recently Added</h2>
+            <h2>Recently Added - Kids Clothing</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content" style="margin-top:-20px;">
@@ -179,8 +181,8 @@
                         <div class="MultiCarousel-inner">
                           {% for each_product in all_products reversed %}
                             <div class="item">
-                                  <div class="thumbnail">
-                                    <div class="image view view-first">
+                                  <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
+                                    <div class="image view view-first" style="height:auto;">
 
                                       {% for each_image in images %}
                                         {% if each_image.album == each_product.image %}
@@ -193,11 +195,11 @@
                                       {% endfor %}
                                     </div>
                                     <div class="caption">
-                                      <p >{{each_product.product_name}}</p>
-                                      <p style="text-decoration:line-through;">{{each_product.price}} PKR</p>
+                                      <p style="font-size:12px;"><strong>{{each_product.brand}} </strong>{{each_product.product_name}}</p>
+                                      <p style="text-decoration:line-through;style="font-size:12px;"">{{each_product.price}} PKR</p>
 
                                       {% if each_product.discount_percent != None %}
-                                      <p>{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+                                      <p style="font-size:12px;">{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
                                       {% endif  %}
                                       {% if each_product.discount_percent == None %}
                                       <p> <br></p>
@@ -216,18 +218,18 @@
         </div>
         <div class="x_panel tile" style="height:360px;">
           <div class="x_title">
-            <h2>Featured</h2>
+            <h2>Recently Added - Cosmetics </h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content" style="margin-top:-20px;">
                 <div class="row">
                     <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel1"  data-interval="1000">
                         <div class="MultiCarousel-inner">
-                          {% for each_product in all_products %}
-                          {% if each_product.is_featured %}
+                          {% for each_product in cosmetics reversed %}
+                          <!--{% if each_product.is_featured %}-->
                             <div class="item">
-                                  <div class="thumbnail">
-                                    <div class="image view view-first">
+                                  <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
+                                    <div class="image view view-first" style="height:auto;">
 
                                       {% for each_image in images %}
                                         {% if each_image.album == each_product.image %}
@@ -240,11 +242,11 @@
                                       {% endfor %}
                                     </div>
                                     <div class="caption">
-                                      <p >{{each_product.product_name}}</p>
-                                      <p style="text-decoration:line-through;">{{each_product.price}} PKR</p>
+                                      <p style="font-size:12px;"><strong>{{each_product.brand}} </strong>{{each_product.product_name}}</p>
+                                      <p style="text-decoration:line-through;font-size:12px;">{{each_product.price}} PKR</p>
 
                                       {% if each_product.discount_percent != None %}
-                                      <p>{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+                                      <pstyle="font-size:12px;">{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
                                       {% endif  %}
                                       {% if each_product.discount_percent == None %}
                                       <p> <br></p>
@@ -253,7 +255,7 @@
                                   </div>
 
                                 </div>
-                          {% endif %}
+                          <!--{% endif %}-->
                           {% endfor %}
                         </div>
                         <button class="btn btn-primary leftLst"><</button>

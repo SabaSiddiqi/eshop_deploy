@@ -1,0 +1,221 @@
+{% extends "app/base_site.html" %}
+{% block title %} Add Products {% endblock title %}
+
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Dropzone.js -->
+  <link href="/static/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Add Product(s)</h3>
+          <br>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_content">
+              <br />
+              <form id="demo-form2" name="productadd"  data-parsley-validate class="form-horizontal form-label-left" action="{% url 'shop:productadd'%}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_name">Product Name <span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="product_name" name="product_name" required="required" class="form-control col-md-7 col-xs-12" value="">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_desc">Product Description<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="product_desc" name="product_desc" required="required" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Category</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="category" class="form-control">
+                        <option>Choose option</option>
+                        {% for each_category in categories %}
+                      <option>{{each_category}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Brand</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="brand" class="form-control">
+                        <option>Choose option</option>
+                        {% for each_brand in all_brands %}
+                      <option>{{each_brand}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Delivery Time</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="delivery_time" class="form-control">
+                        <option>Choose option</option>
+                        {% for each_value in delivery_time %}
+                      <option>{{each_value}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="buy_price">Buy Price<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="number" id="buy_price" name="buy_price" required="required" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="price">Price<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="number" id="price" name="price" required="required" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Apply Discount<span class="required"></span>
+                  </label>
+
+                  <div class="col-md-9 col-sm-9 col-xs-12">
+
+                    <div class="radio">
+                      <label>
+                        <input type="radio" checked="" value="True" id="optionsRadios1" name="apply_discount"> Yes
+                      </label>
+                    </div>
+                    <div class="radio">
+                      <label>
+                        <input type="radio" value="False" id="optionsRadios2" name="apply_discount"> No
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="discount_percent">Discount Percentage<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="number" id="discount_percent" name="discount_percent" required="required" min="0" max="100" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="discount_price">Discounted Price<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="number" id="price" name="discount_price" required="required" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+
+              <div class="form-group">
+                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Product Variant</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                     {% for each_attribute in attributes  %}
+
+                    <div class="checkbox">
+                      <label class=""><input name="variant" type="checkbox" value="{{each_attribute}}"> {{each_attribute}}
+                    </div>
+
+                    <select name="quantity" class="form-control">
+                        <option disabled selected value> Choose Quantity </option>
+                        {% for i in '0123456789'|make_list %}
+                      <option>{{ forloop.counter }}</option>
+                      {% endfor %}}
+                    </select>
+
+
+                    {% endfor %}
+                  </div>
+                </div>
+
+
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Image Album</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="image_album" class="form-control">
+                        <option>Choose option</option>
+                        {% for each_album in image_album reversed %}
+                      <option>{{each_album}}</option>
+                      {% endfor %}}
+                    </select>
+                  </div>
+                </div>
+
+
+
+                <div class="form-group">
+                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Featured<span class="required"></span>
+                  </label>
+
+                  <div class="col-md-9 col-sm-9 col-xs-12">
+
+                    <div class="radio">
+                      <label>
+                        <input type="radio" checked="" value="True" id="optionsRadios1" name="featured"> Yes
+                      </label>
+                    </div>
+                    <div class="radio">
+                      <label>
+                        <input type="radio" value="False" id="optionsRadios2" name="featured"> No
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="ln_solid"></div>
+
+                <div class="form-group">
+                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                    <button style="margin-top:5px;" type="submit" class="btn btn-success" >Submit</button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}
+
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Dropzone.js -->
+  <script src="/static/vendors/dropzone/dist/min/dropzone.min.js"></script>
+{% endblock javascripts %}
