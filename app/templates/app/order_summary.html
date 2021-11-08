@@ -113,12 +113,23 @@
                     <td>{{each_item.product_variant.attribute}}</td>
                       <td>{{each_item.product_quantity}}</td>
                       {% if each_item.product_variant.apply_discount %}
-                    <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price}} Rs</del> {{each_item.product_variant.discounted_price}} Rs  </td>
+
+                    {% if cart.cart_promo_flag %}
+                    <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma  }} </del>  <del>{{each_item.product_variant.discounted_price|intcomma}} </del>{{each_item.promo_unit_amount|intcomma}}  </td>
+                    {% else %}
+                    <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+                    {% endif %}
                       {% endif %}
                       {% if each_item.product_variant.apply_discount != True %}
-                      <td>{{each_item.product_variant.price}} Rs </td>
+                      <td>{{each_item.product_variant.price|intcomma}} Rs </td>
                       {% endif %}
-                    <td>{{each_item.total_amount}}</td>
+
+                    {% if cart.cart_promo_flag %}
+                    <td>{{each_item.promo_total_amount|intcomma}}</td>
+                    {% else %}
+                    <td>{{each_item.total_amount|intcomma}}</td>
+                    {% endif %}
+
 
                   </tr>
 
@@ -169,13 +180,57 @@
                     <input style="color:red;" type="text" class="form-control" disabled="disabled" value="-{{cart.cart_savings_total|intcomma}} Rs">
                   </div>
                 </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">PROMO Savings </label>
+                  <div class="col-md-9 col-sm-9 col-xs-12">
+                    {% if cart.cart_promo_flag %}
+                    <input style="color:red;" type="text" class="form-control" disabled="disabled" value="-{{cart.cart_promo_savings|intcomma}} Rs">
+                    {% else %}
+                    <input style="color:red;" type="text" class="form-control" disabled="disabled" value="-0 Rs">
+                    {% endif %}
+                  </div>
+                </div>
+
                 <div class="ln_solid"></div>
                 <div class="form-group">
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Total </label>
                   <div class="col-md-9 col-sm-9 col-xs-12">
+                    {% if promo_flag %}
+                    <input type="text" class="form-control" disabled="disabled" value="{{cart.promo_cart_total|intcomma}} Rs">
+                    {% else %}
                     <input type="text" class="form-control" disabled="disabled" value="{{cart.cart_total|intcomma}} Rs">
+                    {% endif %}
                   </div>
                 </div>
+
+                <div class="ln_solid"></div>
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Promo Code</label>
+                  <div class="row">
+                  <div class="col-md-3 col-sm-3 col-xs-6">
+                    <input type="text" name="promo_value" class="form-control" value="">
+                  </div>
+                    <div class="col-md-2 col-sm-2 col-xs-2">
+                    <button  style="" type="submit" class="btn btn-success"><a style="color:white;" >Apply</a></button>
+                  </div>
+                    <div class="col-md-2 col-sm-2 col-xs-2">
+                      <button  style="" type="submit" class="btn btn-danger"><a style="color:white;" href="{% url 'shop:order_summary'%}">Remove</a></button>
+                  </div>
+                  </div>
+                </div>
+
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Total </label>
+                  <div class="col-md-9 col-sm-9 col-xs-12">
+                    <input type="text" class="form-control" disabled="disabled" value="{{promo_code_text}}">
+                  </div>
+                  <p>{{cart_savings_total}}</p>
+                  <p>{{cart_savings_total_promo}}</p>
+                  <p>{{cart_savings_promo}}</p>
+                    </div>
 
                 <div class="ln_solid"></div>
                 <div class="form-group">

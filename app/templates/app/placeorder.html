@@ -1,5 +1,5 @@
 {% extends "app/base_site.html" %}
-
+{% load humanize %}
 {% block title %} Tables {% endblock title %}
 
 {% block stylesheets %}
@@ -41,7 +41,7 @@
                         <th class="column-title">Product ID </th>
                       <th class="column-title">Name </th>
                       <th class="column-title">Size </th>
-                        <th class="column-title">Price </th>
+                        <th class="column-title">Price/Unit </th>
                       <th class="column-title">Quantity </th>
                       <th class="column-title">Amount </th>
                       <th class="column-title no-link last"><span class="nobr">View</span>
@@ -62,18 +62,26 @@
                       <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
                       <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
                       <td class=" ">{{each_item.product_variant.attribute}} </td>
+
+
                       {% if each_item.product_variant.apply_discount %}
-                      <td class="a-right a-right ">{{each_item.product_variant.discounted_price}} Rs</td>
-                      {% endif %}
-                      {% if each_item.product_variant.apply_discount != True %}
-                      <td class="a-right a-right ">{{each_item.product_variant.price}} Rs </td>
+							{% if cart.cart_promo_flag %}
+							<td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma  }} </del>  <del>{{each_item.product_variant.discounted_price|intcomma}} </del>{{each_item.promo_unit_amount|intcomma}} Rs </td>
+							{% else %}
+							<td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+							{% endif %}
                       {% endif %}
 
                       <td class=" ">
                         {{each_item.product_quantity}}
                       </td>
 
-                      <td class=" ">{{each_item.total_amount}}</td>
+
+                    {% if cart.cart_promo_flag %}
+                    <td>{{each_item.promo_total_amount|intcomma}} Rs</td>
+                    {% else %}
+                    <td>{{each_item.total_amount|intcomma}} Rs</td>
+                    {% endif %}
 
                       <td class=" last"><a href="{% url 'shop:productview' id=each_item.product_variant.variant.product_id %}" >View</a>
 

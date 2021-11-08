@@ -201,25 +201,50 @@ class ProductVariant(models.Model):
 class Cart (models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     cart_total = models. IntegerField(default=0, blank=True, null=True)
+    promo_cart_total = models. IntegerField(default=0, blank=True, null=True)
     cart_ordered = models.BooleanField(default=False)
     delivery_charges = models.IntegerField(default=0, blank=True, null=True)
     grand_total = models. IntegerField(default=0, blank=True, null=True)
     cart_savings_total = models. IntegerField(default=0, blank=True, null=True)
+    cart_promo_savings = models. IntegerField(default=0, blank=True, null=True)
+    #update this one
     checkout_status = models.BooleanField(default=False)
     checkout_time = models.DateTimeField(auto_now=True, null=True, blank=True)
+    #update this one
+    cart_promo_flag = models.BooleanField(default=False, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.cart_total > 2000:
+
+        if self.promo_cart_total > 2000:
             self.delivery_charges = 0
+            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
         else:
             self.delivery_charges = 200
+            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
 
-        self.cart_total = self.grand_total + self.delivery_charges - self.cart_savings_total
+        if self.cart_total > 2000:
+            self.delivery_charges = 0
+            self.cart_total = self.cart_total + self.delivery_charges
+        else:
+            self.delivery_charges = 200
+            self.cart_total = self.cart_total + self.delivery_charges
 
         return super(Cart, self).save()
 
     def __str__(self):
         return '{} - {}'.format(self.author, self.cart_ordered)
+
+
+class Promo_Code (models.Model):
+    PROMO_CHOICES = (
+        ('one_time', 'ONE_TIME'),
+        ('on_demand', 'ON_DEMAND'),)
+    promo_type = models.CharField(max_length=255, choices=PROMO_CHOICES, default='one_time')
+    promo_name = models.CharField(max_length=255)
+    promo_code = models.CharField(max_length=255)
+    promo_percent = models.IntegerField()
+    promo_status = models.BooleanField(default=False)
+    promo_text = models.CharField(max_length=255, null=True, blank=True)
 
 
 class Cart_Items (models.Model):
@@ -228,9 +253,13 @@ class Cart_Items (models.Model):
     product_quantity = models.IntegerField(default=0, blank=True, null=True)
     add_date_time = models.DateTimeField(auto_now=True,null=True,blank=True)
     total_amount = models.IntegerField(default=0, blank=True, null=True)
+    promo_unit_amount = models.IntegerField(default=0, blank=True, null=True)
+    promo_total_amount = models.IntegerField(default=0, blank=True, null=True)
     savings = models.IntegerField(default=0, blank=True, null=True)
     grand_total_item = models.IntegerField(default=0, blank=True, null=True)
     item_hold_time = models.DateTimeField(null=True, blank=True)
+    promo_savings = models.IntegerField(default=0, blank=True, null=True)
+    total_saving = models.IntegerField(default=0, blank=True, null=True)
 
     def save(self, *args, **kwargs):
 
@@ -305,8 +334,4 @@ class ContactUs(models.Model):
 
         return '{} - {}'.format(self.contact_id, self.name)
         # return f"{self.contact_id} - {self.name}"
-
-
-
-
 
