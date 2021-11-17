@@ -282,7 +282,7 @@ class Cart_Items (models.Model):
 class DeliveryAddress(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     full_name = models.CharField(max_length=255)
-    mobile_number = models.IntegerField()
+    mobile_number = models.CharField(max_length=50,null=True, blank=True)
     province = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     address = models.CharField(max_length=255)

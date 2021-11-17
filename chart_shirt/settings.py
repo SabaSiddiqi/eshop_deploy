@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     # "countdowntimer_model",
     'shop.apps.ShopConfig',
+    'django_extensions',
     'tinymce',
     'social_django',
     'hitcount',
@@ -118,6 +119,9 @@ DATABASES = {
         'USER': 'iyraseshop',
         'PASSWORD': 'Iyr@Atif',
         'HOST': 'iyraseshop.mysql.pythonanywhere-services.com',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
