@@ -103,7 +103,7 @@ function myFunction(imgs) {
                             {% if each_variant.num_available == 0 %}
                             <li><button type="submit" name="size" class="btn btn-default btn-s"
                                         style="background-color:LightGray; text-decoration: line-through;color:Gray;"
-                                        value="{{each_variant.attribute}}">{{each_variant.attribute}}</button></li>
+                                        value="{{each_variant.attribute}}"><a>{{each_variant.attribute}}</button></li>
                             {% endif %}
 
                             {% if each_variant.num_available != 0 %}
@@ -317,9 +317,11 @@ function myFunction(imgs) {
 
                           </div>
                           <div class="modal-footer">
-                            {% with variants.all|first as opt %}
-                            <button type="button" class="btn btn-secondary" ><a href="{% url 'shop:productview' id=opt.variant.product_id %}" >Keep Shopping</a></button>
-                            {% endwith %}
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Keep Shopping</button>
+
+<!--                            {% with variants.all|first as opt %}-->
+<!--                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><a>Keep Shopping</a></button>-->
+<!--                            {% endwith %}-->
                             <button type="button" class="btn btn-secondary"><a href="{% url 'shop:cart'  %}" >Checkout</a></button>
                           </div>
                         </div>

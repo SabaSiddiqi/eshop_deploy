@@ -14,6 +14,28 @@ django.setup()
 from shop.models import Cart, ProductVariant, Cart_Items, Constants
 from datetime import datetime
 
+
+def update_soldout_product(each_product):
+    variant_count=0
+    variants = ProductVariant.objects.filter(variant=each_product.product_id)
+    for each_variant in variants:
+        variant_count = variant_count + int(each_variant.num_available)
+        delivery_time = each_variant.delivery_time
+
+    if variant_count == 0 and each_product.availability_type != 'SoldOut':
+        each_product.availability_type = 'SoldOut'
+        each_product.save()
+
+    elif variant_count != 0 and each_product.availability_type == 'SoldOut':
+
+        if str(delivery_time) == "5 to 7 Working Days":
+            each_product.availability_type = 'InStock'
+            each_product.save()
+        else:
+            each_product.availability_type = 'PreOrder'
+            each_product.save()
+
+
 print("I'm in task now up")
 for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
     print("I'm in task now down")
@@ -30,3 +52,7 @@ for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
             Cart_Items.objects.filter(cart = each_cart, product_variant = each_item.product_variant).delete()
             variant_for_cart.num_available = int(variant_for_cart.num_available) + quantity
             variant_for_cart.save()
+        update_soldout_product(each_item.product_variant.variant)
+
+
+

@@ -13,6 +13,12 @@ def get_upload_path(instance, filename):
     # slug = slugify(title)
     return "images/%s/%s" % (title,filename)
 
+def get_icon_upload_path(instance, filename):
+    title = instance.album.name
+    # slug = slugify(title)
+    print("Upload to", filename)
+    return "images/%s/icon/%s" % (title,filename)
+
 
 class Banner(models.Model):
     banner_text = models.CharField(max_length=255)
@@ -51,6 +57,7 @@ class Image(models.Model):
     # width = models.FloatField(default=100)
     # length = models.FloatField(default=100)
     album = models.ForeignKey(ImageAlbum, related_name='images', on_delete=models.CASCADE,null=True)
+    icon_image = models.ImageField(upload_to=get_icon_upload_path, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -127,6 +134,15 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False, blank=True)
     is_published = models.BooleanField(default=True, blank=True)
+
+
+    #added this
+    AVAILABILITY_CHOICES = (
+        ('InStock', 'InStock'),
+        ('SoldOut', 'SoldOut'),
+        ('PreOrder', 'PreOrder'),)
+    availability_type = models.CharField(max_length=255, choices=AVAILABILITY_CHOICES, default='InStock')
+
 
 
     product_views=models.IntegerField(default=0, null=True, blank=True)
@@ -260,6 +276,7 @@ class Cart_Items (models.Model):
     item_hold_time = models.DateTimeField(null=True, blank=True)
     promo_savings = models.IntegerField(default=0, blank=True, null=True)
     total_saving = models.IntegerField(default=0, blank=True, null=True)
+    returned = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
 
@@ -309,6 +326,19 @@ class UserOrder(models.Model):
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='active')
     def __str__(self):
         return '{} - {}'.format(self.author, self.order_id)
+
+
+class Returns (models.Model):
+    return_item = models.ForeignKey(Cart_Items ,on_delete=models.CASCADE, blank=True, null=True)
+    return_cost = models.IntegerField(default=0, blank=True, null=True)
+    return_reason = models.CharField(max_length=50,null=True, blank=True)
+    return_date = models.DateTimeField(auto_now=True,null=True,blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.return_date:
+            d = self.return_date
+            self.return_date = timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S")
+        return super(Returns, self).save()
 
 class OrderUpdate(models.Model):
     update_id  = models.AutoField(primary_key=True)

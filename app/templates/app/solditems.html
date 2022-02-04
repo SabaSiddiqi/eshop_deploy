@@ -1,0 +1,130 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Sold Items Summary {% endblock title %}
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if filter_button %}
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+{% endblock javascripts %}
+
+{% block content %}
+
+
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+<!--          <h3>Cart <small></small></h3>-->
+        </div>
+
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="row">
+
+        <div class="clearfix"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Sold Items Summary</h2>
+              <div class="title_right" style="float:right;">
+
+            </div>
+
+              <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+
+                <p>{{cart_hold_disclaimer|safe}}</p>
+
+
+              <div class="table-responsive">
+                <table class="table table-striped jambo_table bulk_action">
+                  <thead>
+                    <tr class="headings">
+                        <th class="column-title">Status</th>
+                        <th class="column-title">User</th>
+                        <th class="column-title">Img</th>
+                        <th class="column-title">Name </th>
+                        <th class="column-title">Size </th>
+                        <th class="column-title">Price</span></th>
+                        <th class="column-title">%OFF</span></th>
+                        <th class="column-title" >Pc(s)</span></th>
+                        <th class="column-title" >Add Time</span></th>
+                        <th class="column-title">Total</th>
+                        <th class="column-title">PromoTotal</th>
+                        <th class="column-title">Return</th>
+
+
+
+
+                      <th class="bulk-actions" colspan="7">
+                        <a class="antoo" style="color:#fff; font-weight:500;">Bulk Actions ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+
+                      {% for each_key,each_dict in mega_dict.items reversed %}
+
+                                <tr>
+                                <td style="color:white">
+                                {% if each_dict.item.returned %}
+                                <p style="background:red">Return</p>
+                                    {% else %}
+                                    <p style="background:green">Sold</p>
+                                {% endif %}
+                                </td>
+                                <td>{{each_dict.item.cart.author}}</td>
+                                <td style="width:75px;padding:2px;"><img style="width:70px;display:block;" src="/media/{{each_dict.product_image.icon_image}}"></td>
+                                <td>{{each_dict.product.product_name}}</td>
+                                <td>{{each_dict.variant.attribute}}</td>
+                                <td>{{each_dict.product.price}}</td>
+                                <td>{{each_dict.product.discount_percent}}%</td>
+                                <td>{{each_dict.item.product_quantity}}</td>
+                                <td>{{each_dict.item.add_date_time}}</td>
+                                <td>{{each_dict.item.total_amount}}</td>
+                                <td>{{each_dict.item.promo_total_amount}}</td>
+
+                                {% if each_dict.item.product_quantity >= 1 %}
+                                <td><a class="btn btn-danger" href="{% url 'shop:returnitem' variant_id=each_dict.variant.id  %}">Return Item</a></td>
+                                {% else %}
+                                <td><a class="btn btn-dark" >Returned</a></td>
+                                {% endif %}
+
+
+                                </tr>
+                        {% endfor %}
+
+
+
+                  </tbody>
+                </table>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+
+

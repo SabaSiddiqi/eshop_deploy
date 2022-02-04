@@ -16,6 +16,29 @@ from datetime import datetime
 
 print("I'm in checkout task now")
 
+
+
+def update_soldout_product(each_product):
+    variant_count=0
+    variants = ProductVariant.objects.filter(variant=each_product.product_id)
+    for each_variant in variants:
+        variant_count = variant_count + int(each_variant.num_available)
+        delivery_time = each_variant.delivery_time
+
+    if variant_count == 0 and each_product.availability_type != 'SoldOut':
+        each_product.availability_type = 'SoldOut'
+        each_product.save()
+
+    elif variant_count != 0 and each_product.availability_type == 'SoldOut':
+
+        if str(delivery_time) == "5 to 7 Working Days":
+            each_product.availability_type = 'InStock'
+            each_product.save()
+        else:
+            each_product.availability_type = 'PreOrder'
+            each_product.save()
+
+
 #for cart items that are in checkout state but card is not ordered
 for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=True):
     for each_item in Cart_Items.objects.filter(cart=each_cart):
@@ -29,3 +52,7 @@ for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=True):
         variant_for_cart.num_available = int(variant_for_cart.num_available) + quantity
         #save cart
         variant_for_cart.save()
+        update_soldout_product(each_item.product_variant.variant)
+
+
+

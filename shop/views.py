@@ -156,7 +156,6 @@ def product_add(request):
 
     return render(request, 'app/add_product.html',context)
 
-
 @staff_member_required
 def product_update(request, product_id):
     # print(list(request.POST.items()))
@@ -257,7 +256,6 @@ def remove_variant(request, variant_id):
 
     return redirect('shop:admindash')
 
-
 @staff_member_required
 def add_variant(request, product_id):
 
@@ -321,9 +319,6 @@ def add_variant(request, product_id):
 
     return render(request, 'app/add_variant.html', context)
 
-
-
-
 @staff_member_required
 def admin_dashboard(request):
 
@@ -343,14 +338,11 @@ def admin_dashboard(request):
         # all_products = Product.objects.filter(category__in=list(filtered_categories)).values_list('category', flat=True)
         all_products = Product.objects.filter(category__in=list(filtered_categories))
 
-
     if request.POST.get("brand") and not(request.POST.get("category")) and not(request.POST.get("variant")):
         brands = request.POST.getlist("brand")
         filtered_brands = Brand.objects.filter(brand_name__in=brands)
         # all_products = Product.objects.filter(category__in=list(filtered_categories)).values_list('category', flat=True)
         all_products = Product.objects.filter(brand__in=list(filtered_brands))
-
-
 
     if request.POST.get("brand") and request.POST.get("category") and not(request.POST.get("variant")):
         categories = request.POST.getlist("category")
@@ -395,12 +387,7 @@ def admin_dashboard(request):
 
         all_products = Product.objects.filter(category__in=list(filtered_categories), brand__in=list(filtered_brands),product_id__in=list(list_values))
 
-
-
-    cat_object = Category.objects.get(cat_name='Cosmetics')
-    cosmetics = Product.objects.filter(category=cat_object, is_published=True)
-
-    filtered_products = Product.objects.exclude(category=cat_object)
+    filtered_products = Product.objects.all()
 
     sizes = []
     for each_product in filtered_products:
@@ -446,10 +433,6 @@ def admin_dashboard(request):
         product_dict['product_image'] = product_image
         mega_dict[each_product.product_id] = product_dict
 
-
-
-
-
     context = {
         'all_products':Product.objects.all(),
         'product_variants':ProductVariant.objects.all(),
@@ -466,12 +449,92 @@ def admin_dashboard(request):
     return render(request, 'app/admindash.html', context)
 
 
+def returnitem(request, variant_id):
+    print(variant_id)
+    print(request.POST)
+
+    if 'return_reason' in request.POST:
+        print("Variant Id", int(variant_id))
+
+        variant = ProductVariant.objects.get(id=variant_id)
+        variant.num_available = int(variant.num_available) + 1
+        variant.save()
+
+        cart_item = Cart_Items.objects.get(product_variant = variant)
+        cart_item.returned = True
+        cart_item.product_quantity = cart_item.product_quantity - 1
+        cart_item.save()
+
+        Returns.objects.create(
+            return_item = cart_item,
+            return_cost = request.POST.get("return_cost"),
+            return_reason = request.POST.get("return_reason")
+        )
+
+
+
+        update_soldout_product(variant.variant)
+
+        return redirect('shop:solditems')
+
+    else:
+        variant = ProductVariant.objects.get(id=variant_id)
+        cart_item = Cart_Items.objects.get(product_variant = variant)
+        product = Product.objects.filter(product_id = cart_item.product_variant.variant.product_id).first()
+        image_value = getattr(product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        context={
+            'image':product_image,
+            'variant':variant,
+            'cart_item':cart_item,
+        }
+
+
+        return render(request, 'app/returnitem.html', context)
+
+
+@staff_member_required
+def solditems(request):
+    mega_dict = {}
+    for each_product in Cart_Items.objects.all():
+        product_dict = dict.fromkeys(['item', 'product_image'])
+        product_dict['item'] = each_product
+
+        product = Product.objects.filter(product_id = each_product.product_variant.variant.product_id).first()
+        print("Variant Id", each_product.product_variant.id)
+
+        print("Product", product)
+
+        image_value = getattr(product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        product_dict['product'] = product
+        product_dict['variant'] = each_product.product_variant
+        mega_dict[each_product.product_variant.id] = product_dict
+
+    context = {
+        'all_products':Product.objects.all(),
+        'product_variants':ProductVariant.objects.all(),
+        'sub_sub_categories': Sub_Sub_Category.objects.all(),
+        'sub_categories':Sub_Category.objects.all(),
+        'categories': Category.objects.all(),
+        'header_text':'All Products',
+        'all_brands':Brand.objects.all(),
+        'items':Cart_Items.objects.all(),
+        'mega_dict': mega_dict,
+    }
+    return render(request, 'app/solditems.html', context)
 
 
 def check_carts_scheduler():
     for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
+        print("Running Cart Check")
+        print("Each Cart", each_cart)
     # for each_cart in Cart.objects.filter(cart_ordered=False):
         for each_item in Cart_Items.objects.filter(cart=each_cart):
+            print("Cart Item", each_item)
             this_time = datetime.now() - each_item.item_hold_time.replace(tzinfo=None)
             total_seconds = this_time.total_seconds()
             minutes = total_seconds/60
@@ -482,11 +545,14 @@ def check_carts_scheduler():
                 Cart_Items.objects.filter(cart = each_cart, product_variant = each_item.product_variant).delete()
                 variant_for_cart.num_available = int(variant_for_cart.num_available) + quantity
                 variant_for_cart.save()
+            update_soldout_product(each_item.product_variant.variant)
 
 
 def check_carts(request):
     for each_cart in Cart.objects.filter(cart_ordered=False, checkout_status=False):
+        print("Running Cart Scheduler")
     # for each_cart in Cart.objects.filter(cart_ordered=False):
+        print("Each Cart", each_cart)
         for each_item in Cart_Items.objects.filter(cart=each_cart):
             this_time = datetime.now() - each_item.item_hold_time.replace(tzinfo=None)
             total_seconds = this_time.total_seconds()
@@ -499,13 +565,56 @@ def check_carts(request):
                 variant_for_cart.num_available = int(variant_for_cart.num_available) + quantity
                 variant_for_cart.save()
                 return redirect('shop:cart')
+            update_soldout_product(each_item.product_variant.variant)
     return redirect('shop:cart')
 
 
 # def start():
 #     scheduler = BackgroundScheduler()
-#     scheduler.add_job(check_carts_scheduler, 'interval', seconds=300)
+#     scheduler.add_job(check_carts_scheduler, 'interval', seconds=5)
 #     scheduler.start()
+
+def update_soldout():
+    for each_product in Product.objects.all():
+        variant_count=0
+        variants = ProductVariant.objects.filter(variant=each_product.product_id)
+        for each_variant in variants:
+            variant_count = variant_count + int(each_variant.num_available)
+            delivery_time = each_variant.delivery_time
+
+        if variant_count == 0 and each_product.availability_type != 'SoldOut':
+            each_product.availability_type = 'SoldOut'
+            each_product.save()
+
+        if variant_count != 0 and each_product.availability_type == 'SoldOut':
+            if str(delivery_time) == '5 to 7 Working Days':
+                each_product.availability_type = 'InStock'
+                each_product.save()
+            else:
+                each_product.availability_type = 'PreOrder'
+                each_product.save()
+
+
+def update_soldout_product(each_product):
+    variant_count=0
+    variants = ProductVariant.objects.filter(variant=each_product.product_id)
+    for each_variant in variants:
+        variant_count = variant_count + int(each_variant.num_available)
+        delivery_time = each_variant.delivery_time
+
+    if variant_count == 0 and each_product.availability_type != 'SoldOut':
+        each_product.availability_type = 'SoldOut'
+        each_product.save()
+
+    elif variant_count != 0 and each_product.availability_type == 'SoldOut':
+
+        if str(delivery_time) == "5 to 7 Working Days":
+            each_product.availability_type = 'InStock'
+            each_product.save()
+        else:
+            each_product.availability_type = 'PreOrder'
+            each_product.save()
+
 
 @login_required
 def subscribe(request):
@@ -514,6 +623,7 @@ def subscribe(request):
     subs_query.subscribe_status = True
     subs_query.save()
     return redirect('shop:checkout_address')
+
 
 @login_required
 def unsubscribe(request):
@@ -570,7 +680,6 @@ def terms_conditions(request):
 
     return render(request, 'app/terms_conditions.html', context)
 
-
 def aboutus(request):
 
     aboutus_query = HtmlField.objects.filter(hf_name='aboutus').first()
@@ -587,7 +696,6 @@ def aboutus(request):
     return render(request, 'app/aboutus.html', context)
 
 
-
 def publish(request, product_id):
     product = Product.objects.get(product_id = product_id)
     product.is_published = True
@@ -602,25 +710,22 @@ def unpublish(request, product_id):
     return redirect('shop:admindash')
 
 
-
 def shopHome(request):
 
-    cat_object = Category.objects.get(cat_name='Cosmetics')
-    cosmetics = Product.objects.filter(category=cat_object, is_published=True)
-
-
-    all_products = Product.objects.exclude(category=cat_object)
+    all_products = Product.objects.all()
     all_products = all_products.filter(is_published=True)
+    all_products = all_products.order_by('-updated_at')
 
     context = {'banner': Banner.objects.all().first(),
-               'all_products': all_products,
+               'all_products': all_products[:15],
                'images': Image.objects.all(),
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
                'header_text':'All Products',
                'all_brands':Brand.objects.all(),
-               'cosmetics' : cosmetics,}
+            #   'cosmetics' : cosmetics,
+               }
 
     return render(request, 'app/home.html', context)
 
@@ -674,6 +779,8 @@ def filter_by_cat(request, category):
 
 
     context = {'all_products': all_products, 'images': Image.objects.all(),
+            'all_variants':ProductVariant.objects.all(),
+              'images': Image.objects.all(),
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
@@ -723,14 +830,17 @@ def filter_by_brand(request, brand):
                 all_products = all_products.order_by('-updated_at')
 
             if sortby == '% OFF':
-                all_products = all_products.order_by('-discount_percent')
+                all_products = all_products.order_by('discount_percent')
 
 
 
     else:
         all_products = None
 
-    context = {'all_products': all_products, 'images': Image.objects.all(),
+    context = {'all_products': all_products,
+               #update later to only brand variants
+               'all_variants':ProductVariant.objects.all(),
+              'images': Image.objects.all(),
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
@@ -808,7 +918,8 @@ def productview_details(request, id, attribute_slug):
     image_value = getattr(product, "image")
     product_images = Image.objects.filter(album=image_value)
     attribute = Attribute.objects.filter(attribute_slug=attribute_slug, attribute_category=product.category).first()
-    selected_variant = ProductVariant.objects.filter(variant=product.product_id, attribute = attribute)
+    selected_variant = ProductVariant.objects.filter(variant=product.product_id,attribute = attribute)
+    print("Selected Variant",product.product_id, attribute,  selected_variant)
 
 
 
@@ -867,8 +978,6 @@ def productview_details(request, id, attribute_slug):
        'hit_count':hit_count,}
 
         return render(request, 'app/productview.html', context)
-
-
 
 @login_required
 def add_to_cart(request, product_id, attribute_slug):
@@ -936,6 +1045,8 @@ def add_to_cart(request, product_id, attribute_slug):
     cart_query.save()
     print(cart_query)
 
+    update_soldout_product(product)
+
     context = {'product': product,
                'product_images': product_images,
                'variants':variants,
@@ -949,7 +1060,6 @@ def add_to_cart(request, product_id, attribute_slug):
                'categories': Category.objects.all()}
 
     return render(request, 'app/productview.html', context)
-
 
 @login_required
 def remove_item(request , product_id, attribute):
@@ -968,8 +1078,9 @@ def remove_item(request , product_id, attribute):
         variant_for_cart.num_available = int(variant_for_cart.num_available) + quantity
         variant_for_cart.save()
 
-
     user_cart_all = Cart_Items.objects.filter(cart = user_cart)
+
+    update_soldout_product(product)
 
     context = {'user_cart':user_cart_all,
             'sub_sub_categories': Sub_Sub_Category.objects.all(),
@@ -1016,6 +1127,8 @@ def add_quantity(request, product_id, attribute):
 
     user_cart_all = Cart_Items.objects.filter(cart = user_cart)
 
+    update_soldout_product(product)
+
     return redirect('shop:cart')
 
 
@@ -1055,7 +1168,7 @@ def minus_quantity(request, product_id, attribute):
             else:
                 added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
             added_cart.save()
-
+    update_soldout_product(product)
     return redirect('shop:cart')
 
 

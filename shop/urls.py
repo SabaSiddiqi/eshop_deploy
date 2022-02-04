@@ -37,8 +37,8 @@ urlpatterns = [
     path('removevariant/<int:variant_id>/', views.remove_variant, name='removevariant'),
     path('addvariant/<int:product_id>/', views.add_variant, name='addvariant'),
 
-
-
+    path('solditems/', views.solditems, name='solditems'),
+    path('returnitem/<int:variant_id>/', views.returnitem, name='returnitem'),
 
     path('productview/<int:id>/', views.productview, name='productview'),
     path('productview/<int:id>/<str:attribute_slug>/', views.productview_details, name='productview_details'),
@@ -47,13 +47,6 @@ urlpatterns = [
     path('publish/<int:product_id>/', views.publish, name='publish'),
     path('unpublish/<int:product_id>/', views.unpublish, name='unpublish'),
 
-
-
-
-
-
-
 ]
 
 
-# start()
