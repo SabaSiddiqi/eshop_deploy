@@ -6,7 +6,7 @@ from tinymce import models as tinymce_models
 from django.conf import settings
 from hitcount.models import HitCountMixin, HitCount
 from django.contrib.contenttypes.fields import GenericRelation
-
+from taggit.managers import TaggableManager
 
 def get_upload_path(instance, filename):
     title = instance.album.name
@@ -119,6 +119,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     sub_category = models.ForeignKey(Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
     sub_sub_category = models.ForeignKey(Sub_Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
+    product_tags = TaggableManager()
+
 
     price = models.IntegerField(null=True)
     apply_discount = models.BooleanField(default=False, blank=True)
@@ -261,6 +263,8 @@ class Promo_Code (models.Model):
     promo_percent = models.IntegerField()
     promo_status = models.BooleanField(default=False)
     promo_text = models.CharField(max_length=255, null=True, blank=True)
+    promo_tag = models.CharField(max_length=255, null=True, blank=True)
+
 
 
 class Cart_Items (models.Model):

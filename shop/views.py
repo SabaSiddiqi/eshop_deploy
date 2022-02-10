@@ -319,6 +319,8 @@ def add_variant(request, product_id):
 
     return render(request, 'app/add_variant.html', context)
 
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 @staff_member_required
 def admin_dashboard(request):
 
@@ -361,7 +363,6 @@ def admin_dashboard(request):
         brands = request.POST.getlist("brand")
         filtered_brands = Brand.objects.filter(brand_name__in=brands)
         all_products = Product.objects.filter(brand__in=list(filtered_brands),product_id__in=list(list_values))
-
 
     if request.POST.get("variant") and request.POST.get("category") and not(request.POST.get("brand")):
 
@@ -415,6 +416,20 @@ def admin_dashboard(request):
         if sortby == '% OFF':
             all_products = all_products.order_by('discount_percent')
 
+    p = Paginator(all_products, 10)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+    all_products = page_obj
+
     for each_product in all_products:
         product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
         product_dict['product'] = each_product
@@ -444,6 +459,7 @@ def admin_dashboard(request):
          'mega_dict': mega_dict,
           'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
           'sizes':sizes,
+        'page_obj':all_products,
     }
 
     return render(request, 'app/admindash.html', context)
@@ -878,6 +894,66 @@ def filter_by_subcat(request, category, sub_category):
 
     return render(request, 'app/home.html', context)
 
+
+def filter_by_tag(request, tag):
+    tag_query = Product.objects.filter(product_tags__name__in=[tag])
+    sizes = None
+
+    if tag_query.first():
+        # cat_id = Category.objects.filter(cat_slug=category).first()
+        all_products = Product.objects.filter(product_tags__name__in=[tag], is_published=True).order_by('-updated_at')
+
+        sizes = []
+        for each_product in all_products:
+            variants = ProductVariant.objects.filter( variant = each_product.product_id)
+            for each_variant in variants:
+                sizes.append(each_variant.attribute.attribute)
+
+        sizes = set(sizes)
+
+        if request.POST.get("variant"):
+            variant = request.POST.getlist("variant")
+            filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+            list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+            all_products = Product.objects.filter(product_id__in=list(list_values),product_tags__name__in=[tag])
+
+        if request.POST.get("sort_by"):
+            sortby = request.POST.get("sort_by")
+            print("SORTBY", sortby)
+
+            if sortby == 'Price(High to Low)':
+                all_products = all_products.order_by('-discounted_price')
+
+            if sortby == 'Price(Low to High)':
+                all_products = all_products.order_by('discounted_price')
+
+            if sortby == 'Recently Added':
+                all_products = all_products.order_by('-updated_at')
+
+            if sortby == '% OFF':
+                all_products = all_products.order_by('-discount_percent')
+
+    else:
+        all_products = None
+
+
+
+
+    context = {'all_products': all_products, 'images': Image.objects.all(),
+            'all_variants':ProductVariant.objects.all(),
+              'images': Image.objects.all(),
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'all_brands':Brand.objects.all(),
+               'header_text':"Search Results for " + tag.capitalize().replace("_"," ") + " items",
+               'filter_button':False,
+               'sizes':sizes,
+                'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+                # 'category':Category.objects.filter(cat_slug=category).first(),
+               }
+
+    return render(request, 'app/home_searchby.html', context)
 
 @never_cache
 def productview(request, id):
@@ -1378,7 +1454,11 @@ def order_summary(request):
             each_cart.save()
 
         # If a promocode request is received
+
+
+
         if request.GET.get('promo_value'):
+            print("PROMO CODE APPLIED")
 
             # get promocode value
             promo_value = request.GET.get('promo_value')
@@ -1386,68 +1466,146 @@ def order_summary(request):
             # Check if similar Promo code object exists
             promo_query = Promo_Code.objects.filter(promo_code=promo_value, promo_status=True)
 
-
             # If promocode exists
             if promo_query.first():
 
                 promo_query = Promo_Code.objects.filter(promo_code = promo_value).first()
+                print("Promo Value", promo_value, promo_query.promo_type)
+
+
                 promo_code_text = promo_query.promo_text
                 # calculate promo savings for cart
                 promotion_savings = user_cart.cart_total * promo_query.promo_percent/100
 
-                # If user cart exists
-                if user_cart_all.first():
+                if promo_query.promo_type == 'tag_based':
 
-                    # For each item in user cart
-                    for each_item in user_cart_all:
+                    if user_cart_all.first():
 
-                        # Get variant
-                        variant_for_cart = each_item.product_variant
-                        added_cart = each_item
-                        # added_cart = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart).first()
-                        added_cart.savings = int(added_cart.product_quantity) * variant_for_cart.savings_item
-                        added_cart.promo_savings = int(added_cart.product_quantity) * variant_for_cart.discounted_price * promo_query.promo_percent/100
-                        added_cart.grand_total_item = int(added_cart.product_quantity) * variant_for_cart.price
+                        # For each item in user cart
+                        for each_item in user_cart_all:
+                            # Get variant
+                            variant_for_cart = each_item.product_variant
 
-                        print("Promo Savings", added_cart.promo_savings)
-                        if variant_for_cart.apply_discount:
-                            added_cart.total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price)
-                            added_cart.promo_total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price) - added_cart.promo_savings
-                            added_cart.promo_unit_amount = added_cart.promo_total_amount / (int(added_cart.product_quantity))
-                        else:
-                            added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
-                        added_cart.save()
+                            if variant_for_cart.variant.product_tags.all().first():
 
-                    cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
-                    cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
-                    cart_savings_promo = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_savings'))['promo_savings__sum']
-                    cart_grand_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('grand_total_item'))['grand_total_item__sum']
-                    cart_promo_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_total_amount'))['promo_total_amount__sum']
+                                for each_value in variant_for_cart.variant.product_tags.all():
+                                    if each_value.name == promo_query.promo_tag:
+                                        added_cart = each_item
+                                        # added_cart = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart).first()
+                                        added_cart.savings = int(added_cart.product_quantity) * variant_for_cart.savings_item
+                                        added_cart.promo_savings = int(added_cart.product_quantity) * variant_for_cart.discounted_price * promo_query.promo_percent/100
+                                        added_cart.grand_total_item = int(added_cart.product_quantity) * variant_for_cart.price
 
-                    user_cart.cart_promo_savings = cart_savings_promo
-                    user_cart.cart_total = cart_total
-                    user_cart.cart_savings_total = cart_savings_total
-                    user_cart.grand_total = cart_grand_total
-                    user_cart.promo_cart_total = cart_promo_total
-                    user_cart.cart_total = cart_promo_total
-                    promo_flag = True
-                    user_cart.cart_promo_flag = promo_flag
-                    user_cart.save()
+                                        if variant_for_cart.apply_discount:
+                                            added_cart.total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price)
+                                            added_cart.promo_total_amount = int((int(added_cart.product_quantity) * variant_for_cart.discounted_price) - added_cart.promo_savings)
+                                            added_cart.promo_unit_amount = int(added_cart.promo_total_amount / (int(added_cart.product_quantity)))
+                                        else:
+                                            added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
+                                        added_cart.save()
+
+                            else:
+                                added_cart = each_item
+                                added_cart.savings = int(added_cart.product_quantity) * variant_for_cart.savings_item
+                                added_cart.promo_savings = 0
+                                added_cart.grand_total_item = int(added_cart.product_quantity) * variant_for_cart.price
+
+                                if variant_for_cart.apply_discount:
+                                    added_cart.total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price)
+                                    added_cart.promo_total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price) - added_cart.promo_savings
+                                    added_cart.promo_unit_amount = added_cart.promo_total_amount / (int(added_cart.product_quantity))
+                                else:
+                                    added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
+                                added_cart.save()
+
+                        cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
+                        cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
+                        cart_savings_promo = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_savings'))['promo_savings__sum']
+                        cart_grand_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('grand_total_item'))['grand_total_item__sum']
+                        cart_promo_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_total_amount'))['promo_total_amount__sum']
+
+                        user_cart.cart_promo_savings = cart_savings_promo
+                        user_cart.cart_total = cart_total
+                        user_cart.cart_savings_total = cart_savings_total
+                        user_cart.grand_total = cart_grand_total
+                        user_cart.promo_cart_total = cart_promo_total
+                        user_cart.cart_total = cart_promo_total
+                        promo_flag = True
+                        user_cart.cart_promo_flag = promo_flag
+                        user_cart.save()
 
 
-                context = {'address_query': address_query.first(),
-                   'user_cart':user_cart_all,
-                   'cart':user_cart,
-               'sub_sub_categories': Sub_Sub_Category.objects.all(),
-               'sub_categories':Sub_Category.objects.all(),
-               'categories': Category.objects.all(),
-               'all_brands':Brand.objects.all(),
-               'checkout_disclaimer':checkout_disclaimer.hf_value,
-                'promo_code_text':promo_code_text,
-                'promo_flag':promo_flag,
-               }
+                    context = {'address_query': address_query.first(),
+                       'user_cart':user_cart_all,
+                       'cart':user_cart,
+                   'sub_sub_categories': Sub_Sub_Category.objects.all(),
+                   'sub_categories':Sub_Category.objects.all(),
+                   'categories': Category.objects.all(),
+                   'all_brands':Brand.objects.all(),
+                   'checkout_disclaimer':checkout_disclaimer.hf_value,
+                    'promo_code_text':promo_code_text,
+                    'promo_flag':promo_flag,
+                   }
 
-                return render(request, 'app/order_summary.html', context)
+                    return render(request, 'app/order_summary.html', context)
+
+                else:
+
+                    # If user cart exists
+                    if user_cart_all.first():
+
+                        # For each item in user cart
+                        for each_item in user_cart_all:
+
+
+
+                            # Get variant
+                            variant_for_cart = each_item.product_variant
+                            added_cart = each_item
+                            # added_cart = Cart_Items.objects.filter(cart = user_cart, product_variant = variant_for_cart).first()
+                            added_cart.savings = int(added_cart.product_quantity) * variant_for_cart.savings_item
+                            added_cart.promo_savings = int(added_cart.product_quantity) * variant_for_cart.discounted_price * promo_query.promo_percent/100
+                            added_cart.grand_total_item = int(added_cart.product_quantity) * variant_for_cart.price
+
+                            print("Promo Savings", added_cart.promo_savings)
+                            if variant_for_cart.apply_discount:
+                                added_cart.total_amount = (int(added_cart.product_quantity) * variant_for_cart.discounted_price)
+                                added_cart.promo_total_amount = int((int(added_cart.product_quantity) * variant_for_cart.discounted_price) - added_cart.promo_savings)
+                                added_cart.promo_unit_amount = int(added_cart.promo_total_amount / (int(added_cart.product_quantity)))
+                            else:
+                                added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
+                            added_cart.save()
+
+                        cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
+                        cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
+                        cart_savings_promo = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_savings'))['promo_savings__sum']
+                        cart_grand_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('grand_total_item'))['grand_total_item__sum']
+                        cart_promo_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('promo_total_amount'))['promo_total_amount__sum']
+
+                        user_cart.cart_promo_savings = cart_savings_promo
+                        user_cart.cart_total = cart_total
+                        user_cart.cart_savings_total = cart_savings_total
+                        user_cart.grand_total = cart_grand_total
+                        user_cart.promo_cart_total = cart_promo_total
+                        user_cart.cart_total = cart_promo_total
+                        promo_flag = True
+                        user_cart.cart_promo_flag = promo_flag
+                        user_cart.save()
+
+
+                    context = {'address_query': address_query.first(),
+                       'user_cart':user_cart_all,
+                       'cart':user_cart,
+                   'sub_sub_categories': Sub_Sub_Category.objects.all(),
+                   'sub_categories':Sub_Category.objects.all(),
+                   'categories': Category.objects.all(),
+                   'all_brands':Brand.objects.all(),
+                   'checkout_disclaimer':checkout_disclaimer.hf_value,
+                    'promo_code_text':promo_code_text,
+                    'promo_flag':promo_flag,
+                   }
+
+                    return render(request, 'app/order_summary.html', context)
 
             else:
 
@@ -1481,8 +1639,9 @@ def order_summary(request):
                     user_cart.cart_total = cart_total
                     user_cart.save()
 
-        else:
 
+        else:
+            print("PROMO CODE NOT APPLIED")
             if user_cart_all.first():
 
                 for each_item in user_cart_all:
@@ -1509,10 +1668,6 @@ def order_summary(request):
                 user_cart.cart_promo_flag = promo_flag
                 user_cart.cart_total = cart_total
                 user_cart.save()
-
-
-
-
 
 
         context = {'address_query': address_query.first(),
