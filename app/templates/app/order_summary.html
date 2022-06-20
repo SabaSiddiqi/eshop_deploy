@@ -112,17 +112,25 @@
                     <td>{{each_item.product_variant.variant.product_name}}</td>
                     <td>{{each_item.product_variant.attribute}}</td>
                       <td>{{each_item.product_quantity}}</td>
-                      {% if each_item.product_variant.apply_discount %}
 
-                    {% if cart.cart_promo_flag %}
-                    <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma  }} </del>  <del>{{each_item.product_variant.discounted_price|intcomma}} </del>{{each_item.promo_unit_amount|intcomma}}  </td>
-                    {% else %}
-                    <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+
+                    {% if each_item.product_variant.apply_discount %}
+
+                        {% if cart.cart_promo_flag %}
+                          {% if each_item.product_variant.variant.on_sale %}
+                          <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma  }} </del>  <del>{{each_item.product_variant.discounted_price|intcomma}} </del>{{each_item.promo_unit_amount|intcomma}}  </td>
+                          {% else %}
+                          <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+                          {% endif %}
+                        {% else %}
+                        <td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+                        {% endif %}
+
                     {% endif %}
-                      {% endif %}
-                      {% if each_item.product_variant.apply_discount != True %}
-                      <td>{{each_item.product_variant.price|intcomma}} Rs </td>
-                      {% endif %}
+
+                    {% if each_item.product_variant.apply_discount != True %}
+                        <td>{{each_item.product_variant.price|intcomma}} Rs </td>
+                    {% endif %}
 
                     {% if cart.cart_promo_flag %}
                     <td>{{each_item.promo_total_amount|intcomma}}</td>

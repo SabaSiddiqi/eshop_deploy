@@ -63,7 +63,7 @@
                         <th class="column-title">Brand</th>
                         <th class="column-title">Name </th>
                         <th class="column-title">Category </th>
-                        <th class="column-title">Buy Price</th>
+                        <th class="column-title">Tags</th>
                         <th class="column-title">Price</span></th>
                         <th class="column-title">% OFF</span></th>
                         <th class="column-title" >% Price</span></th>
@@ -94,7 +94,17 @@
                                   <td>{{each_dict.product.brand}}</td>
                                   <td>{{each_dict.product.product_name}}</td>
                                   <td>{{each_dict.product.category}}</td>
-                                  <td>{{each_variant.buy_price}}</td>
+                                  <td>
+                                  {% for tag in each_dict.product.product_tags.values %}
+                                        {{tag.name}},
+                                    {% empty %}
+                                        {# None #}
+                                    {% endfor %}
+
+
+
+
+                                  </td>
                                   <td>{{each_dict.product.price}}</td>
                                 <td>{{each_variant.discount_percent}}</td>
                                 <td>{{each_variant.discounted_price}}</td>

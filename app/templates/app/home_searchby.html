@@ -82,12 +82,12 @@
                       {% for each_variant in all_variants %}
                       {% if each_product == each_variant.variant %}
                            {% if each_variant.num_available == 0 %}
-                            <button class="btn btn-default btn-xs" style="background-color:silver;text-decoration: line-through; font-size:10px;">
+                            <button class="btn btn-default btn-xs" style="background-color:silver;text-decoration: line-through; font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
                                 <a href="{% url 'shop:productview_details' id=each_product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a>
                             </button>
                             {% endif %}
                             {% if each_variant.num_available != 0 %}
-                            <button class="btn btn-default btn-xs" style="font-size:10px;">
+                            <button class="btn btn-default btn-xs" style="font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
                                 <a href="{% url 'shop:productview_details' id=each_product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a></button>
                             </button>
                             {% endif %}
@@ -103,6 +103,14 @@
                           {% if each_product.discount_percent == None %}
                           <p> <br></p>
                           {% endif  %}
+
+
+                        {% if each_product.on_sale %}
+                        <hr style="margin: 2px 0 0px 0;">
+                        <p style="font-size:8px;">Use Code <b>WINTER22</b> for extra 10% OFF</p>
+                        {% endif %}
+
+
                         </div>
                   </div>
 

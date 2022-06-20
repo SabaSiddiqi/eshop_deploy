@@ -80,6 +80,39 @@
                 </div>
 
 
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="tags">Tags<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    {% for tag in product.product_tags.values %}
+                    <input type="text" id="tags" name="tags" required="required" class="form-control col-md-7 col-xs-12"
+                           value="{{tag.name}}">
+                           {% empty %}
+                           {# None #}
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="add_tags">Add Tag<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="add_tags" name="add_tags"  class="form-control col-md-7 col-xs-12"
+                           value="">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="remove_tags">Remove Tag<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="remove_tags" name="remove_tags"  class="form-control col-md-7 col-xs-12"
+                           value="">
+                  </div>
+                </div>
+
+
+
 
                 {% for each_variant in variants %}
                 </br>

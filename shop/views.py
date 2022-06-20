@@ -190,6 +190,15 @@ def product_update(request, product_id):
             brand=Brand.objects.get(brand_name=brand)
             product.brand = brand
 
+        if request.POST.get("add_tags"):
+            tag = request.POST.get("add_tags")
+            product.product_tags.add(tag)
+
+        if request.POST.get("remove_tags"):
+            tag = request.POST.get("remove_tags")
+            product.product_tags.remove(tag)
+
+
 
         product.save()
 

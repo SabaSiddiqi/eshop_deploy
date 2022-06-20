@@ -119,7 +119,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     sub_category = models.ForeignKey(Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
     sub_sub_category = models.ForeignKey(Sub_Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
-    product_tags = TaggableManager()
+    product_tags = TaggableManager(blank=True)
 
 
     price = models.IntegerField(null=True)
@@ -136,6 +136,8 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False, blank=True)
     is_published = models.BooleanField(default=True, blank=True)
+    on_sale = models.BooleanField(default=False, blank=True)
+
 
 
     #added this
@@ -256,7 +258,8 @@ class Cart (models.Model):
 class Promo_Code (models.Model):
     PROMO_CHOICES = (
         ('one_time', 'ONE_TIME'),
-        ('on_demand', 'ON_DEMAND'),)
+        ('on_demand', 'ON_DEMAND'),
+        ('tag_based', 'TAG_BASED'))
     promo_type = models.CharField(max_length=255, choices=PROMO_CHOICES, default='one_time')
     promo_name = models.CharField(max_length=255)
     promo_code = models.CharField(max_length=255)
@@ -265,6 +268,22 @@ class Promo_Code (models.Model):
     promo_text = models.CharField(max_length=255, null=True, blank=True)
     promo_tag = models.CharField(max_length=255, null=True, blank=True)
 
+    def save(self):
+        if self.promo_type == 'tag_based' and self.promo_status == True:
+            for each_product in Product.objects.all():
+                for each_tag in each_product.product_tags.all():
+                    if self.promo_tag == each_tag.name:
+                        each_product.on_sale = True
+                        each_product.save()
+                    print(each_tag, "-->", each_product.on_sale)
+
+        if self.promo_type == 'tag_based' and self.promo_status == False:
+            for each_product in Product.objects.all():
+                for each_tag in each_product.product_tags.all():
+                    if self.promo_tag == each_tag.name:
+                        each_product.on_sale = False
+                        each_product.save()
+                    print(each_tag, "-->", each_product.on_sale)
 
 
 class Cart_Items (models.Model):
