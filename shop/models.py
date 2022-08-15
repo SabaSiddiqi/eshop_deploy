@@ -19,12 +19,9 @@ def get_icon_upload_path(instance, filename):
     print("Upload to", filename)
     return "images/%s/icon/%s" % (title,filename)
 
-
 class Banner(models.Model):
     banner_text = models.CharField(max_length=255)
     banner_image = models.ImageField(upload_to='banner', null=True)
-
-
 
 class Logo(models.Model):
     logo_text = models.CharField(max_length=255)
@@ -177,6 +174,25 @@ class Attribute (models.Model):
         # return '{} - {}'.format(self.attribute, self.attribute_category)
         return self.attribute
 
+class Shipment(models.Model):
+    shipment = models.IntegerField(default=1)
+    shipment_charges = models.FloatField(blank=True, null=True)
+    number_of_items = models.FloatField(blank=True, null=True)
+    shipment_charges_per_item = models.FloatField(blank=True, null=True)
+    shipment_rate = models.FloatField(default=158, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+
+        if self.number_of_items:
+            self.shipment_charges_per_item = self.shipment_charges / self.number_of_items
+
+        return super(Shipment, self).save()
+
+    def __str__(self):
+
+        return '{}'.format(self.shipment)
+
+
 
 class ProductVariant(models.Model):
     variant = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -184,7 +200,7 @@ class ProductVariant(models.Model):
     delivery_time = models.ForeignKey(DeliveryTime, on_delete=models.CASCADE)
 
 
-    buy_price = models.IntegerField(null=True)
+    buy_price = models.FloatField(blank=True, null=True)
     price = models.IntegerField(null=True)
 
     apply_discount = models.BooleanField(default=False, blank=True)
@@ -194,20 +210,16 @@ class ProductVariant(models.Model):
 
     total_pcs=models.IntegerField(default=1, null=True, blank=True)
     num_available=models.IntegerField(default=1)
-    shipment=models.IntegerField(default=1)
+    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
+    shipment_charges = models.FloatField(default=1,blank=True, null=True)
 
-    savings_item = models.IntegerField(blank=True)
+    savings_item = models.IntegerField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-
-        if self.apply_discount:
-            # self.discounted_price = self.price - (self.price * self.discount_percent / 100)
-            self.savings_item = self.price - self.discounted_price
-
+        if self.shipment.number_of_items:
+            self.shipment_charges = self.shipment.shipment_charges_per_item
         else:
-            self.savings_item = 0
-            # self.discounted_price = self.price
-
+            self.shipment_charges = 1
         return super(ProductVariant, self).save()
 
     def __str__(self):
@@ -232,6 +244,11 @@ class Cart (models.Model):
     checkout_time = models.DateTimeField(auto_now=True, null=True, blank=True)
     #update this one
     cart_promo_flag = models.BooleanField(default=False, null=True, blank=True)
+    delivery_charges = models.FloatField(null=True, blank=True)
+    tcs_delivery_charges = models.FloatField(null=True, blank=True)
+    delivery_charges_per_item = models.FloatField(blank=True, null=True)
+
+
 
     def save(self, *args, **kwargs):
 
@@ -276,6 +293,7 @@ class Promo_Code (models.Model):
                         each_product.on_sale = True
                         each_product.save()
                     print(each_tag, "-->", each_product.on_sale)
+            return super(Promo_Code, self).save()
 
         if self.promo_type == 'tag_based' and self.promo_status == False:
             for each_product in Product.objects.all():
@@ -284,6 +302,7 @@ class Promo_Code (models.Model):
                         each_product.on_sale = False
                         each_product.save()
                     print(each_tag, "-->", each_product.on_sale)
+            return super(Promo_Code, self).save()
 
 
 class Cart_Items (models.Model):
@@ -301,7 +320,27 @@ class Cart_Items (models.Model):
     total_saving = models.IntegerField(default=0, blank=True, null=True)
     returned = models.BooleanField(default=False)
 
+    delivery_charges_per_item = models.FloatField(blank=True, null=True)
+    profit_cad = models.FloatField(blank=True, null=True)
+    profit_pkr = models.FloatField(blank=True, null=True)
+
     def save(self, *args, **kwargs):
+
+        if self.cart.cart_promo_flag:
+            if self.cart.tcs_delivery_charges:
+                self.delivery_charges_per_item = self.cart.delivery_charges_per_item
+                self.profit_cad = ((self.total_amount-self.delivery_charges_per_item)/self.product_variant.shipment.shipment_rate) - self.product_variant.buy_price
+                self.profit_pkr = (self.total_amount-self.delivery_charges_per_item) - (self.product_variant.buy_price*self.product_variant.shipment.shipment_rate)
+        else:
+            if self.cart.tcs_delivery_charges:
+                self.delivery_charges_per_item = self.cart.delivery_charges_per_item
+                self.profit_cad = ((self.promo_total_amount-self.delivery_charges_per_item)/self.product_variant.shipment.shipment_rate) - self.product_variant.buy_price
+                self.profit_pkr = (self.promo_total_amount-self.delivery_charges_per_item) - (self.product_variant.buy_price*self.product_variant.shipment.shipment_rate)
+
+        if self.cart.tcs_delivery_charges:
+            self.delivery_charges_per_item = self.cart.delivery_charges_per_item
+            self.profit_cad = ((self.total_amount-self.delivery_charges_per_item)/self.product_variant.shipment.shipment_rate) - self.product_variant.buy_price
+            self.profit_pkr = (self.total_amount-self.delivery_charges_per_item) - (self.product_variant.buy_price*self.product_variant.shipment.shipment_rate)
 
         if self.add_date_time:
             print("Add Date", self.add_date_time)
@@ -330,25 +369,77 @@ class DeliveryAddress(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.author, self.full_name)
 
+
+class SocialDeliveryAddress(models.Model):
+    username = models.CharField(max_length=255)
+    MEDIA_CHOICES = (
+    ('instagram', 'INSTAGRAM'),
+    ('facebook', 'FACEBOOK'),)
+    media_type = models.CharField(max_length=255, choices=MEDIA_CHOICES, default='instagram')
+    full_name = models.CharField(max_length=255)
+    mobile_number = models.CharField(max_length=50,null=True, blank=True)
+    province = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.username, self.full_name, self.mobile_number)
+
+
+class TCSPaymentPeriod(models.Model):
+    payment_period = models.CharField(max_length=255, blank=True)
+    delivery_charges = models.FloatField(null=True, blank=True)
+    cod_total = models.IntegerField(blank=True, null=True)
+    cod_return = models.IntegerField(blank=True, null=True)
+    number_of_orders = models.IntegerField(blank=True, null=True)
+    delivery_per_order = models.FloatField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.number_of_orders:
+            self.delivery_per_order = (self.cod_total-self.cod_return)/self.number_of_orders
+        return super(TCSPaymentPeriod, self).save()
+
+    def __str__(self):
+        return '{}'.format(self.payment_period)
+
+
 class UserOrder(models.Model):
 
     STATUS_CHOICES = (
         ('active', 'ACTIVE'),
         ('shipped', 'SHIPPED'),
-        ('deliver', 'DELIVER'),
-    ('active','ACTIVE'),
-    ('shipped', 'SHIPPED'),
-    ('deliver','DELIVER'),
+        ('deliver', 'DELIVERED'),
+        ('returned', 'RETURNED'),
+        ('cancelled', 'CANCELLED'),
     )
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
+    tcsorder = models.ForeignKey(TCSPaymentPeriod,on_delete=models.CASCADE, blank=True, null=True)
     order_id = models.AutoField(primary_key=True)
     order_cart = models.ForeignKey(Cart, on_delete=models.CASCADE, blank=True, null=True)
     order_address = models.ForeignKey(DeliveryAddress, on_delete=models.CASCADE, blank=True, null=True)
+    social_address = models.ForeignKey(SocialDeliveryAddress, on_delete=models.CASCADE, blank=True, null=True)
     ordered_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='active')
+    tracking_id = models.CharField(max_length=255, blank=True)
+    booking_date = models.DateField(null=True, blank=True)
+    delivery_charges = models.FloatField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.tcsorder:
+            self.delivery_charges = self.tcsorder.delivery_per_order
+            self.order_cart.tcs_delivery_charges = self.delivery_charges
+            cart_item_count = len(Cart_Items.objects.filter(cart=self.order_cart))
+            self.order_cart.delivery_charges_per_item = self.delivery_charges/cart_item_count
+            print(self.order_cart.delivery_charges_per_item)
+            self.order_cart.save()
+        return super(UserOrder, self).save()
+
+
+
+
     def __str__(self):
-        return '{} - {}'.format(self.author, self.order_id)
+        return '{} - {} - {} ---- [{}]'.format(self.author, self.order_id, self.status, self.social_address)
 
 
 class Returns (models.Model):
@@ -363,6 +454,7 @@ class Returns (models.Model):
             self.return_date = timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S")
         return super(Returns, self).save()
 
+
 class OrderUpdate(models.Model):
     update_id  = models.AutoField(primary_key=True)
     order_id = models.IntegerField(default="")
@@ -374,7 +466,6 @@ class OrderUpdate(models.Model):
         return '{} - {}'.format(self.order_id, self.status)
 
         # return f"{self.order_id} - {self.status}"
-
 
 
 class ContactUs(models.Model):

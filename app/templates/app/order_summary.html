@@ -32,6 +32,7 @@
             </div>
             <div class="x_content">
               <br />
+
               <form class="form-horizontal form-label-left input_mask" >
 
                 <div class="form-group">
@@ -85,6 +86,7 @@
             </div>
           </div>
 
+
           <div class="x_panel">
             <div class="x_title">
               <h2>My Cart</h2>
@@ -93,10 +95,12 @@
               </ul>
               <div class="clearfix"></div>
             </div>
-            <table class="table">
+            <div class="table-responsive" >
+            <table class="table jambo_table bulk_action">
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Image</th>
                     <th>Product</th>
                     <th>Size</th>
                       <th>Pcs</th>
@@ -106,9 +110,12 @@
                 </thead>
 
                 <tbody>
-                {% for each_item in user_cart %}
+                {% for each_key,each_item in order_dict.items %}
                   <tr>
                     <th scope="row">{{each_item.product_variant.variant.product_id}}</th>
+                    <td>
+                    <img style="max-width: 50px; and height: auto;" src="/media/{{each_key}}" alt="image" />
+                    </td>
                     <td>{{each_item.product_variant.variant.product_name}}</td>
                     <td>{{each_item.product_variant.attribute}}</td>
                       <td>{{each_item.product_quantity}}</td>
@@ -145,6 +152,10 @@
                 </tbody>
 
               </table>
+              </div>
+                  <div class="byline">
+                    <span>Scroll right to view complete table</span>
+                  </div>
           </div>
 
 

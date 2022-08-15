@@ -46,7 +46,7 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Category</label><span class="required"></span>
                   <div class="col-md-6 col-sm-6 col-xs-12">
                     <select name="category" class="form-control">
-                        <option>Choose option</option>
+                        <option value="" disabled selected >Choose option</option>
                         {% for each_category in categories %}
                       <option>{{each_category}}</option>
                       {% endfor %}
@@ -58,9 +58,22 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Brand</label><span class="required"></span>
                   <div class="col-md-6 col-sm-6 col-xs-12">
                     <select name="brand" class="form-control">
-                        <option>Choose option</option>
+                        <option value="" disabled selected>Choose option</option>
                         {% for each_brand in all_brands %}
                       <option>{{each_brand}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Shipment</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="shipment" class="form-control">
+                        <option value="" disabled selected>Choose Shipment</option>
+                        {% for each_value in shipments reversed %}
+                      <option>{{each_value}}</option>
                       {% endfor %}
                     </select>
                   </div>
@@ -71,7 +84,7 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Delivery Time</label><span class="required"></span>
                   <div class="col-md-6 col-sm-6 col-xs-12">
                     <select name="delivery_time" class="form-control">
-                        <option>Choose option</option>
+                        <option value="" disabled selected>Choose option</option>
                         {% for each_value in delivery_time %}
                       <option>{{each_value}}</option>
                       {% endfor %}
@@ -165,7 +178,7 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Select Image Album</label><span class="required"></span>
                   <div class="col-md-6 col-sm-6 col-xs-12">
                     <select name="image_album" class="form-control">
-                        <option>Choose option</option>
+                        <option value="" disabled selected>Choose option</option>
                         {% for each_album in image_album reversed %}
                       <option>{{each_album}}</option>
                       {% endfor %}}

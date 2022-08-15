@@ -64,6 +64,7 @@
                         <th class="column-title">Name </th>
                         <th class="column-title">Category </th>
                         <th class="column-title">Tags</th>
+                        <th class="column-title">Buy Price</th>
                         <th class="column-title">Price</span></th>
                         <th class="column-title">% OFF</span></th>
                         <th class="column-title" >% Price</span></th>
@@ -87,8 +88,12 @@
                       {% for each_key,each_dict in mega_dict.items %}
 
                                 {% for each_variant in each_dict.variants %}
-
+                                {% if each_variant.num_available == 0 %}
+                                <tr style="background:#9FE2BF;" >
+                                {% endif %}
+                                {% if each_variant.num_available != 0 %}
                                 <tr>
+                                {% endif %}
                                 <td>{{each_dict.product_image}}</td>
                                 <td style="width:75px;padding:2px;"><img style="width:70px;display:block;" src="/media/{{each_dict.product_image.image}}"></td>
                                   <td>{{each_dict.product.brand}}</td>
@@ -105,13 +110,14 @@
 
 
                                   </td>
+                                    <td>{{each_variant.buy_price}}</td>
                                   <td>{{each_dict.product.price}}</td>
                                 <td>{{each_variant.discount_percent}}</td>
                                 <td>{{each_variant.discounted_price}}</td>
                                 <td>{{each_variant.savings_item}}</td>
                                 <td>{{each_variant.attribute}}</td>
                                 <td>{{each_variant.num_available}}</td>
-                                <td>{{each_variant.shipment}}</td>
+                                <td>S{{each_variant.shipment}}</td>
                                 {% if each_dict.product.is_published %}
                                 <td><a class="btn btn-danger" href="{% url 'shop:unpublish' product_id=each_dict.product.product_id  %}">Unpublish</a></td>
                                 {% else %}
@@ -131,25 +137,9 @@
                 </table>
 
 
-                  <center>
-                    {%if page_obj.has_previous %} {# whether the previous page exists #}
-                        <a href="?page={{page_obj.previous_page_number}}"><</a> {# link to the prev page #}
-                    {% endif %}
-                    <span>{{page_obj.number}}</span> {# the current page number #}
 
 
-                      {{page_obj.p.page_range}}
-                    {% for i in all_products.paginator.page_range %}
-                    {% endfor %}
-
-
-                    {%if page_obj.has_next %} {# whether the next page exists #}
-                        <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
-                    {% endif %}
-                </center>
-
-
-              <ul class="pagination">
+              <center><ul class="pagination">
                 {% if page_obj.has_previous %}
                   <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
                 {% else %}
@@ -167,7 +157,7 @@
                 {% else %}
                   <li class="disabled"><span>&raquo;</span></li>
                 {% endif %}
-              </ul>
+              </ul></center>
 
 
 

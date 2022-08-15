@@ -72,9 +72,11 @@ def product_add(request):
             category = request.POST.get("category")
             category = Category.objects.get(cat_name=category)
 
+        if request.POST.get("shipment"):
+            shipment = int(request.POST.get("shipment"))
 
         if request.POST.get("buy_price"):
-            buy_price = int(request.POST.get("buy_price"))
+            buy_price = float(request.POST.get("buy_price"))
 
         if request.POST.get("price"):
             price = int(request.POST.get("price"))
@@ -116,6 +118,7 @@ def product_add(request):
             product_name=product_name,
             product_desc=product_desc,
             category=category,
+            shipment = Shipment.objects.get(shipment=shipment),
             price=price,
             apply_discount=apply_discount,
             discount_percent=discount_percent,
@@ -149,6 +152,7 @@ def product_add(request):
         'categories': Category.objects.all(),
         'image_album':ImageAlbum.objects.all(),
         'all_brands':Brand.objects.all(),
+        'shipments':Shipment.objects.all(),
         'attributes':Attribute.objects.all(),
         'delivery_time':DeliveryTime.objects.all()
 
@@ -198,15 +202,17 @@ def product_update(request, product_id):
             tag = request.POST.get("remove_tags")
             product.product_tags.remove(tag)
 
-
-
         product.save()
 
         for each_variant in variants:
-            print(each_variant.id)
+
             if request.POST.get(str(each_variant.id)+"_"+"buy_price"):
-                buy_price = int(request.POST.get(str(each_variant.id)+"_"+"buy_price"))
+                buy_price = float(request.POST.get(str(each_variant.id)+"_"+"buy_price"))
                 each_variant.buy_price = buy_price
+
+            if request.POST.get(str(each_variant.id)+"_"+"shipment"):
+                shipment = int(request.POST.get(str(each_variant.id)+"_"+"shipment"))
+                each_variant.shipment = Shipment.objects.get(shipment=shipment)
 
             if request.POST.get(str(each_variant.id)+"_"+"price"):
                 price = int(request.POST.get(str(each_variant.id)+"_"+"price"))
@@ -228,9 +234,7 @@ def product_update(request, product_id):
             #     variant = request.POST.getlist(str(each_variant.id)+"_"+"variant")
 
             if request.POST.get(str(each_variant.id)+"_"+"quantity"):
-                print("I have the quantity")
                 quantity = request.POST.get(str(each_variant.id)+"_"+"quantity")
-                print("And the quantity is", quantity)
                 each_variant.num_available = int(quantity)
 
             if request.POST.get(str(each_variant.id)+"_"+"featured"):
@@ -241,7 +245,7 @@ def product_update(request, product_id):
                 each_variant.delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time)
 
             each_variant.save()
-            return redirect('shop:admindash')
+        return redirect('shop:admindash')
 
     #else
 
@@ -251,7 +255,8 @@ def product_update(request, product_id):
                 'image_album':ImageAlbum.objects.all(),
                 'all_brands':Brand.objects.all(),
                 'attributes':Attribute.objects.all(),
-                'delivery_time':DeliveryTime.objects.all()
+                'delivery_time':DeliveryTime.objects.all(),
+                'shipment':Shipment.objects.all()
 
                 }
 
@@ -274,7 +279,10 @@ def add_variant(request, product_id):
     if request.method == 'POST':
 
         if request.POST.get("buy_price"):
-            buy_price = int(request.POST.get("buy_price"))
+            buy_price = float(request.POST.get("buy_price"))
+
+        if request.POST.get("shipment"):
+            shipment = int(request.POST.get("shipment"))
 
         if request.POST.get("price"):
             price = int(request.POST.get("price"))
@@ -308,6 +316,7 @@ def add_variant(request, product_id):
             attribute = Attribute.objects.get(attribute=each_variant, attribute_category=product.category ),
             delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time),
             buy_price = buy_price,
+            shipment= Shipment.objects.get(shipment=shipment),
             price = price,
             apply_discount = apply_discount,
             discount_percent = discount_percent,
@@ -315,14 +324,14 @@ def add_variant(request, product_id):
             num_available=each_quantity)
 
         return redirect('shop:admindash')
-
     context = {'product':product,
             'variants':variants,
             'categories': Category.objects.all(),
             'image_album':ImageAlbum.objects.all(),
             'all_brands':Brand.objects.all(),
+            'shipments':Shipment.objects.all(),
             'attributes':Attribute.objects.filter(attribute_category = product.category),
-            'delivery_time':DeliveryTime.objects.all()
+            'delivery_time':DeliveryTime.objects.all(),
 
             }
 
@@ -425,7 +434,7 @@ def admin_dashboard(request):
         if sortby == '% OFF':
             all_products = all_products.order_by('discount_percent')
 
-    p = Paginator(all_products, 10)  # creating a paginator object
+    p = Paginator(all_products, 30)  # creating a paginator object
     # getting the desired page number from url
     page_number = request.GET.get('page')
     try:
@@ -466,7 +475,7 @@ def admin_dashboard(request):
         'header_text':'All Products',
         'all_brands':Brand.objects.all(),
          'mega_dict': mega_dict,
-          'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+          'sortby_options':['Choose option','Price(Hi   `gh to Low)','Price(Low to High)','Recently Added','% OFF'],
           'sizes':sizes,
         'page_obj':all_products,
     }
@@ -802,6 +811,42 @@ def filter_by_cat(request, category):
 
 
 
+    p = Paginator(all_products, 40)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+
+    all_products = page_obj
+
+
+    mega_dict={}
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
+
 
     context = {'all_products': all_products, 'images': Image.objects.all(),
             'all_variants':ProductVariant.objects.all(),
@@ -815,6 +860,9 @@ def filter_by_cat(request, category):
                'sizes':sizes,
                 'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
                 'category':Category.objects.filter(cat_slug=category).first(),
+               'page_obj':all_products,
+               'mega_dict':mega_dict,
+
                }
 
     return render(request, 'app/home_searchby.html', context)
@@ -862,6 +910,44 @@ def filter_by_brand(request, brand):
     else:
         all_products = None
 
+
+    p = Paginator(all_products, 40)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+
+    all_products = page_obj
+
+
+    mega_dict={}
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
+
+
     context = {'all_products': all_products,
                #update later to only brand variants
                'all_variants':ProductVariant.objects.all(),
@@ -874,6 +960,8 @@ def filter_by_brand(request, brand):
               'sizes':set(sizes),
                 'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
                 'brand':Brand.objects.filter(brand_slug=brand).first(),
+               'page_obj':all_products,
+               'mega_dict':mega_dict,
                }
 
     return render(request, 'app/home_searchby.html', context)
@@ -946,6 +1034,39 @@ def filter_by_tag(request, tag):
         all_products = None
 
 
+    p = Paginator(all_products, 40)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+    all_products = page_obj
+
+    mega_dict={}
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
 
 
     context = {'all_products': all_products, 'images': Image.objects.all(),
@@ -960,6 +1081,8 @@ def filter_by_tag(request, tag):
                'sizes':sizes,
                 'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
                 # 'category':Category.objects.filter(cat_slug=category).first(),
+               'page_obj':all_products,
+               'mega_dict':mega_dict,
                }
 
     return render(request, 'app/home_searchby.html', context)
@@ -1270,8 +1393,8 @@ def cart(request):
 
     print("UserCart_all",user_cart_all)
 
+    order_dict_details={}
     if user_cart_all.first():
-
         for each_item in user_cart_all:
             variant_for_cart = each_item.product_variant
             print(variant_for_cart)
@@ -1287,6 +1410,11 @@ def cart(request):
                 added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
             added_cart.save()
 
+            image_value = getattr(each_item.product_variant.variant, "image")
+            product_image = Image.objects.get(album=image_value, default=True)
+            order_dict_details[product_image.icon_image] = each_item
+
+
         cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
         cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
         cart_grand_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('grand_total_item'))['grand_total_item__sum']
@@ -1297,12 +1425,15 @@ def cart(request):
         user_cart.grand_total = cart_grand_total
         user_cart.save()
 
+
     context = {'cart_hold_disclaimer':cart_hold_disclaimer.hf_value,
-                'user_cart':user_cart_all, 'cart':user_cart,
+                'user_cart':user_cart_all,
+               'cart':user_cart,
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories':Sub_Category.objects.all(),
                'categories': Category.objects.all(),
-               'all_brands':Brand.objects.all(),}
+               'all_brands':Brand.objects.all(),
+               'order_dict':order_dict_details,}
 
     return render(request, 'app/cart.html', context)
 
@@ -1446,6 +1577,10 @@ def order_summary(request):
 
     checkout_disclaimer = HtmlField.objects.filter(hf_name='checkout_disclaimer_text').first()
     address_query = DeliveryAddress.objects.filter(author=request.user)
+    if request.user.is_superuser:
+        social_address = SocialDeliveryAddress.objects.all()
+    else:
+        social_address = None
     promo_code_text='NO PROMOCODE APPLIED'
     promo_flag = False
 
@@ -1490,6 +1625,7 @@ def order_summary(request):
 
                     if user_cart_all.first():
 
+                        order_dict_details={}
                         # For each item in user cart
                         for each_item in user_cart_all:
                             # Get variant
@@ -1526,6 +1662,10 @@ def order_summary(request):
                                 else:
                                     added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
                                 added_cart.save()
+                            image_value = getattr(each_item.product_variant.variant, "image")
+                            product_image = Image.objects.get(album=image_value, default=True)
+                            order_dict_details[product_image.icon_image] = each_item
+
 
                         cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
                         cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
@@ -1554,6 +1694,8 @@ def order_summary(request):
                    'checkout_disclaimer':checkout_disclaimer.hf_value,
                     'promo_code_text':promo_code_text,
                     'promo_flag':promo_flag,
+                    'social_address':social_address,
+                    'order_dict':order_dict_details,
                    }
 
                     return render(request, 'app/order_summary.html', context)
@@ -1562,7 +1704,7 @@ def order_summary(request):
 
                     # If user cart exists
                     if user_cart_all.first():
-
+                        order_dict_details={}
                         # For each item in user cart
                         for each_item in user_cart_all:
 
@@ -1584,6 +1726,9 @@ def order_summary(request):
                             else:
                                 added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
                             added_cart.save()
+                            image_value = getattr(each_item.product_variant.variant, "image")
+                            product_image = Image.objects.get(album=image_value, default=True)
+                            order_dict_details[product_image.icon_image] = each_item
 
                         cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
                         cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
@@ -1612,6 +1757,10 @@ def order_summary(request):
                    'checkout_disclaimer':checkout_disclaimer.hf_value,
                     'promo_code_text':promo_code_text,
                     'promo_flag':promo_flag,
+                    'social_address':social_address,
+                   'order_dict':order_dict_details,
+
+
                    }
 
                     return render(request, 'app/order_summary.html', context)
@@ -1621,7 +1770,7 @@ def order_summary(request):
                 promo_code_text = promo_value + ' - INVALID PROMOCODE'
 
                 if user_cart_all.first():
-
+                    order_dict_details={}
                     for each_item in user_cart_all:
                         variant_for_cart = each_item.product_variant
 
@@ -1634,7 +1783,9 @@ def order_summary(request):
 
                         else:
                             added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
-
+                        image_value = getattr(each_item.product_variant.variant, "image")
+                        product_image = Image.objects.get(album=image_value, default=True)
+                        order_dict_details[product_image.icon_image] = each_item
                     cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
                     cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
                     cart_grand_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('grand_total_item'))['grand_total_item__sum']
@@ -1652,7 +1803,7 @@ def order_summary(request):
         else:
             print("PROMO CODE NOT APPLIED")
             if user_cart_all.first():
-
+                order_dict_details={}
                 for each_item in user_cart_all:
                     variant_for_cart = each_item.product_variant
 
@@ -1666,6 +1817,9 @@ def order_summary(request):
                     else:
                         added_cart.total_amount = int(added_cart.product_quantity) * variant_for_cart.price
                     added_cart.save()
+                    image_value = getattr(each_item.product_variant.variant, "image")
+                    product_image = Image.objects.get(album=image_value, default=True)
+                    order_dict_details[product_image.icon_image] = each_item
 
                 cart_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('total_amount'))['total_amount__sum']
                 cart_savings_total = Cart_Items.objects.filter(cart = user_cart).aggregate(Sum('savings'))['savings__sum']
@@ -1689,6 +1843,10 @@ def order_summary(request):
                'checkout_disclaimer':checkout_disclaimer.hf_value,
                 'promo_code_text':promo_code_text,
                 'promo_flag':promo_flag,
+                'social_address':social_address,
+                'order_dict':order_dict_details,
+
+
                }
 
         return render(request, 'app/order_summary.html', context)
@@ -1703,10 +1861,6 @@ def order_summary(request):
         return render(request, 'app/checkout.html')
 
     return render(request, 'app/checkout.html')
-
-
-
-
 
 @login_required
 @never_cache
@@ -1768,7 +1922,6 @@ def placeorder(request):
         # return HttpResponse('Nothing to order')
         return redirect('shop:cart')
 
-
 @login_required
 def myorders(request):
 
@@ -1779,7 +1932,23 @@ def myorders(request):
     for each_value in user_cart:
         cart_items.append(each_value.id)
 
-    user_cart_all = Cart_Items.objects.filter(cart__id__in=cart_items)
+    order_dict_all = {}
+    for each_order in user_orders:
+        order_dict = {}
+        order_dict = dict.fromkeys(['order', 'author','cart','items'])
+        order_dict['order'] = each_order
+        order_dict['author'] = each_order.author
+        order_dict['cart'] = each_order.order_cart
+        # user_cart_items = Cart_Items.objects.filter(cart__id__in=cart_items)
+        order_dict['items'] = Cart_Items.objects.filter(cart=each_order.order_cart)
+        user_cart_all = Cart_Items.objects.filter(cart=each_order.order_cart)
+        order_dict_details = {}
+        for each_item in order_dict['items']:
+            image_value = getattr(each_item.product_variant.variant, "image")
+            product_image = Image.objects.get(album=image_value, default=True)
+            order_dict_details[product_image.icon_image] = each_item
+        order_dict['items_list'] = order_dict_details
+        order_dict_all[each_order.order_id] = order_dict
 
     context = {'user_orders': user_orders,
                'user_cart': user_cart,
@@ -1787,7 +1956,117 @@ def myorders(request):
                'sub_sub_categories': Sub_Sub_Category.objects.all(),
                'sub_categories': Sub_Category.objects.all(),
                'categories': Category.objects.all(),
-               'all_brands':Brand.objects.all(),}
+               'all_brands':Brand.objects.all(),
+               'myorders': order_dict_all,
+               }
 
     return render(request, 'app/myorders.html', context)
 
+
+@staff_member_required
+def allorders(request):
+
+
+    allorders = UserOrder.objects.all()
+
+    user_orders = UserOrder.objects.all()
+    user_cart = Cart.objects.all()
+
+
+    order_dict_all={}
+
+    for each_order in allorders:
+        order_dict = {}
+        order_dict = dict.fromkeys(['order', 'author','cart','items'])
+        order_dict['order'] = each_order
+        order_dict['author'] = each_order.author
+        order_dict['cart'] = each_order.order_cart
+        # user_cart_items = Cart_Items.objects.filter(cart__id__in=cart_items)
+        order_dict['items'] = Cart_Items.objects.filter(cart=each_order.order_cart)
+        user_cart_all = Cart_Items.objects.filter(cart=each_order.order_cart)
+        order_dict_details = {}
+        for each_item in order_dict['items']:
+            image_value = getattr(each_item.product_variant.variant, "image")
+            product_image = Image.objects.get(album=image_value, default=True)
+            order_dict_details[product_image.icon_image] = each_item
+        order_dict['items_list'] = order_dict_details
+        order_dict_all[each_order.order_id] = order_dict
+
+
+    context = {'all_orders':allorders,
+                'user_orders': user_orders,
+               'user_cart': user_cart,
+               'user_cart_all': user_cart_all,
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories': Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'all_brands':Brand.objects.all(),
+               'order_dict':order_dict,
+               'order_dict_all':order_dict_all,}
+
+    return render(request, 'app/allorders.html', context)
+
+@staff_member_required
+def summary(request):
+    payment_periods = TCSPaymentPeriod.objects.values('payment_period')
+    records = TCSPaymentPeriod.objects.filter(payment_period__in=[item['payment_period'] for item in payment_periods])
+
+    user_orders = UserOrder.objects.all()
+    user_cart = Cart.objects.all()
+
+    tcs_record = {}
+    for each_record in records:
+        allorders = UserOrder.objects.filter(tcsorder=each_record)
+        order_dict_all={}
+        for each_order in allorders:
+            order_dict = {}
+            order_dict = dict.fromkeys(['order', 'author','cart','items'])
+            order_dict['order'] = each_order
+            order_dict['author'] = each_order.author
+            order_dict['cart'] = each_order.order_cart
+            # user_cart_items = Cart_Items.objects.filter(cart__id__in=cart_items)
+            order_dict['items'] = Cart_Items.objects.filter(cart=each_order.order_cart)
+            user_cart_all = Cart_Items.objects.filter(cart=each_order.order_cart)
+            order_dict_details = {}
+            for each_item in order_dict['items']:
+                image_value = getattr(each_item.product_variant.variant, "image")
+                product_image = Image.objects.get(album=image_value, default=True)
+                order_dict_details[product_image.icon_image] = each_item
+            order_dict['items_list'] = order_dict_details
+            order_dict_all[each_order.order_id] = order_dict
+        tcs_record[each_record.payment_period] = order_dict_all
+
+
+    context = {'all_orders':allorders,
+                'user_orders': user_orders,
+               'user_cart': user_cart,
+               'user_cart_all': user_cart_all,
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories': Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'all_brands':Brand.objects.all(),
+               'order_dict':order_dict,
+               'order_dict_all':order_dict_all,
+               'tcs_record':tcs_record}
+
+    return render(request, 'app/summary.html', context)
+
+
+def preorder(request):
+
+    all_products = Product.objects.all()
+    all_products = all_products.filter(is_published=True)
+    all_products = all_products.order_by('-updated_at')
+
+    context = {'banner': Banner.objects.all().first(),
+               'all_products': all_products[:15],
+               'images': Image.objects.all(),
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'header_text':'All Products',
+               'all_brands':Brand.objects.all(),
+            #   'cosmetics' : cosmetics,
+               }
+
+    return render(request, 'app/preorderportal.html', context)

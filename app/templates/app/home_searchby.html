@@ -49,73 +49,61 @@
               <div class="row">
 
                   {% if all_products %}
-                {% for each_product in all_products %}
-                <div class="col-md-55" style="">
+                  {% for each_key,each_dict in mega_dict.items %}
+              <div class="col-md-55" style="">
                   <div class="thumbnail" style="height:320px;background-color:#F7F7F7;">
                     <div class="image view view-first" style="height:auto;object-fit: cover;">
-
-
-
-                      {% for each_image in images %}
-                        {% if each_image.album == each_product.image %}
-                          {% if each_image.default == True %}
-
-                            <a href="/productview/{{each_product.product_id}}">
-                                <img style="  width:100%;object-fit: cover;" src="/media/{{each_image.icon_image}}" alt="image" />
-                                {% if each_product.availability_type == 'InStock' %}
-                                <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: MediumSeaGreen; color:white;">{{each_product.availability_type}}</button>
-                                {% endif %}
-                                {% if each_product.availability_type == 'SoldOut' %}
-                                <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: #f44336; color:white;">{{each_product.availability_type}}</button>
-                                {% endif %}
-                                {% if each_product.availability_type == 'PreOrder' %}
-                                <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: Gold; color:white;">{{each_product.availability_type}}</button>
-                                {% endif %}
-
-                            </a>
-                          {% endif %}
+                    <a href="/productview/{{each_dict.product.product_id}}">
+                        <img style="  width:100%;object-fit: cover;" src="/media/{{each_dict.product_image.icon_image}}" alt="image" />
+                        {% if each_dict.product.availability_type == 'InStock' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: MediumSeaGreen; color:white;">{{each_dict.product.availability_type}}</button>
                         {% endif %}
-                      {% endfor %}
+                        {% if each_dict.product.availability_type == 'SoldOut' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: #f44336; color:white;">{{each_dict.product.availability_type}}</button>
+                        {% endif %}
+                        {% if each_dict.product.availability_type == 'PreOrder' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: Gold; color:white;">{{each_dict.product.availability_type}}</button>
+                        {% endif %}
+                    </a>
                     </div>
-                        <div class="caption" >
 
-                      {% for each_variant in all_variants %}
-                      {% if each_product == each_variant.variant %}
-                           {% if each_variant.num_available == 0 %}
+                    <div class="caption">
+
+                        {% for each_variant in each_dict.variants %}
+                            {% if each_variant.num_available == 0 %}
                             <button class="btn btn-default btn-xs" style="background-color:silver;text-decoration: line-through; font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
-                                <a href="{% url 'shop:productview_details' id=each_product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a>
+                                <a href="{% url 'shop:productview_details' id=each_dict.product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a>
                             </button>
                             {% endif %}
                             {% if each_variant.num_available != 0 %}
                             <button class="btn btn-default btn-xs" style="font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
-                                <a href="{% url 'shop:productview_details' id=each_product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a></button>
+                                <a href="{% url 'shop:productview_details' id=each_dict.product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a></button>
                             </button>
                             {% endif %}
-                      {% endif %}
-                      {% endfor %}
+                        {% endfor %}
 
-                            <p style="font-size:10px;"><strong>{{each_product.brand}} </strong>{{each_product.product_name}}</p>
-                          <p style="text-decoration:line-through; font-size:10px;">{{each_product.price}} PKR</p>
 
-                          {% if each_product.discount_percent != None %}
-                          <p style="font-size:10px;">{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+
+                        <p style="font-size:10px;"><strong>{{each_dict.product.brand}} </strong>{{each_dict.product.product_name}}</p>
+                          <p style="text-decoration:line-through; font-size:10px;">{{each_dict.product.price}} PKR</p>
+
+                          {% if each_dict.product.discount_percent != None %}
+                          <p style="font-size:10px;">{{each_dict.product.discounted_price}} PKR  <strong style="color:red;">({{each_dict.product.discount_percent}}% OFF)</strong> </p>
                           {% endif  %}
-                          {% if each_product.discount_percent == None %}
+                          {% if each_dict.product.discount_percent == None %}
                           <p> <br></p>
                           {% endif  %}
 
 
-                        {% if each_product.on_sale %}
+                        {% if each_dict.product.on_sale %}
                         <hr style="margin: 2px 0 0px 0;">
-                        <p style="font-size:8px;">Use Code <b>WINTER22</b> for extra 10% OFF</p>
+                        <p style="font-size:8px;">Use Code <b>SUMMER22</b> for extra 10% OFF</p>
                         {% endif %}
-
-
                         </div>
                   </div>
+              </div>
+              {% endfor %}
 
-                </div>
-                {% endfor %}
 
                   {% else %}
 
@@ -123,6 +111,28 @@
 
                   {% endif %}
 
+
+                <div>
+              <center><ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                  {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+              </ul></center>
+                </div>
 
 
                   <!--                     Modal-->
