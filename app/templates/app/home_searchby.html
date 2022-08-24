@@ -23,7 +23,7 @@
     <div class="">
       <div class="page-title">
         <div class="title_left">
-          <h3> {{header_text}}<small></small> </h3>
+          <h3> {{header_text}} {{size_name}}<small></small> </h3>
           <br>
         </div>
         <div class="title_right">
@@ -42,11 +42,17 @@
 
       <div class="row">
         <div class="col-md-12">
+            {% if category %}
+                {% for each_size in size_names %}
+                  <button class="alert alert-success" style="background-color:Teal;border:grey;padding:10px;" ><a style="color:WhiteSmoke;" href="/searchbycategory/{{category.cat_slug}}/{{each_size.size_slug}}/">{{each_size}}</a></button>
+                  {% endfor %}
+            {% endif %}
           <div class="x_panel">
 
             <div class="x_content">
 
               <div class="row">
+
 
                   {% if all_products %}
                   {% for each_key,each_dict in mega_dict.items %}
@@ -97,7 +103,7 @@
 
                         {% if each_dict.product.on_sale %}
                         <hr style="margin: 2px 0 0px 0;">
-                        <p style="font-size:8px;">Use Code <b>SUMMER22</b> for extra 10% OFF</p>
+                        <p style="font-size:8px;">Use Code <b>WINTER22</b> for extra 10% OFF</p>
                         {% endif %}
                         </div>
                   </div>

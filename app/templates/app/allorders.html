@@ -133,10 +133,21 @@
                           </thead>
                             <tbody>
                             <td style="width:50%">
+
+                            {% if each_order.order.social_address %}
+                            <b>Name</b>: {{each_order.order.social_address.full_name}}<br>
+                            <b>Address</b>: {{each_order.order.social_address.address}}<br>
+                            <b>Phone Number</b>: {{each_order.order.social_address.mobile_number}}<br>
+                           <br><b>Delivery Time</b>: 5-7 Working Days<br>
+
+                            {% else %}
+
                             <b>Name</b>: {{each_order.order.order_address.full_name}}<br>
                             <b>Address</b>: {{each_order.order.order_address.address}}, {{each_order.order.order_address.city}}, {{each_order.order.order_address.province}}<br>
                             <b>Phone Number</b>: {{each_order.order.order_address.mobile_number}}<br>
                            <br><b>Delivery Time</b>: 5-7 Working Days<br>
+
+                            {% endif %}
 
                             </td>
                             <td style="width:50%">

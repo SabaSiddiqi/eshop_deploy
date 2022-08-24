@@ -14,8 +14,70 @@ from django.template.loader import render_to_string, get_template
 from django.core.files import File
 from datetime import date
 from datetime import datetime
+import os
+from shop.models import Image, ImageAlbum, Attribute
+from django.core.files.uploadedfile import SimpleUploadedFile
+import PIL.Image as Pillow
+import shutil
 
 
+def create_icon_image(each_image, width, height):
+    dir_name = '/Users/sabasiddiqi/Desktop/Saba/mywork/eshop_20june2022/eshop_deploy/media'
+    base_filename = 'images'
+    folder_name = str(each_image.album)
+    file_name = str(each_image.image)
+    path_image = os.path.join(dir_name, file_name)
+
+    if not path_image:
+        print("Path Image doesn't exist")
+
+    else:
+        print("Path Image Exists")
+        image = Pillow.open(path_image)
+
+        #if image is default image
+        if each_image.default == True:
+
+            #create icon images for refault
+
+            #resize image before saving as icon
+            icon_image = image.resize((height, width))
+
+            #set file name - album_name/image_name_icon.jpeg
+            file_name = str(each_image.album) + "_icon." + str(each_image.image).split(".")[-1]
+
+            #check image format
+            image_format = str(each_image.image).split(".")[-1]
+
+            cond1 = image_format == 'jpg'
+            cond2 = image_format == 'jpeg'
+
+            #file path to icon
+            path_icon = os.path.join(dir_name, base_filename, str(each_image.album), 'icon', file_name)
+
+            #directory path to icon
+            image_path = os.path.join(dir_name, base_filename, str(each_image.album), 'icon')
+
+            #check if icon folder exists
+            isExist = os.path.exists(image_path)
+
+            if not isExist:
+                # create icon folder
+                print("Does Not Exist")
+                os.makedirs(os.path.join(dir_name, base_filename, str(each_image.album), 'icon'))
+                print(path_icon)
+                icon_image.save(path_icon)
+                each_image.icon_image = SimpleUploadedFile(name=file_name, content=open(path_icon, 'rb').read(), content_type='image/jpeg')
+                os.remove(path_icon)
+                each_image.save()
+            else:
+                print("Exist")
+                shutil.rmtree(image_path)
+                os.makedirs(os.path.join(dir_name, base_filename, str(each_image.album), 'icon'))
+                icon_image.save(path_icon)
+                each_image.icon_image = SimpleUploadedFile(name=file_name, content=open(path_icon, 'rb').read(), content_type='image/jpeg')
+                os.remove(path_icon)
+            each_image.save()
 
 
 def trunc_at(s, d, n=2):
@@ -105,28 +167,69 @@ def product_add(request):
             image_album_name = request.POST.get("image_album")
             image_album=ImageAlbum.objects.get(name=image_album_name)
 
+        if request.POST.get("url"):
+            image_url = request.POST.get("url")
+            print("Image URL", image_url)
+
+        if request.POST.get("image_name"):
+            image_name = request.POST.get("image_name")
+            print("Image NAme", image_name)
 
         if request.POST.get("featured"):
             featured = bool(request.POST.get("featured"))
 
+        if request.POST.get("preorder"):
+            preorder = bool(request.POST.get("preorder"))
+
         if request.POST.get("delivery_time"):
             delivery_time = request.POST.get("delivery_time")
 
+        if request.POST.get("url") and request.POST.get("image_name"):
+            print("Image URL", image_url)
+            import urllib.request
+            try:
+                album_name = ImageAlbum.objects.get(name=trunc_at(str(image_name),'_'))
+
+            except:
+                album_name = ImageAlbum.objects.create(name=trunc_at(str(image_name),'_'))
+
+            img = urllib.request.urlretrieve(image_url,image_name)
+
+            import PIL.Image as Pillow
+
+            # icon_name = str(album_name) + "_icon." + str(image_name).split(".")[-1]
+            a = Image.objects.create(
+                name=str(image_name).split('.')[0],
+                image=File(open(img[0], 'rb')),
+                default=True,
+                album=album_name,
+                )
+
+            create_icon_image(a, 256, 192)
+
+
+    # name = models.CharField(max_length=255, default="name")
+    # image = models.ImageField(upload_to=get_upload_path, null=True)
+    # default = models.BooleanField(default=False)
+    # # width = models.FloatField(default=100)
+    # # length = models.FloatField(default=100)
+    # album = models.ForeignKey(ImageAlbum, related_name='images', on_delete=models.CASCADE,null=True)
+    # icon_image = models.ImageField(upload_to=get_icon_upload_path, null=True, blank=True)
 
         #Add Product
         n = Product.objects.create(
             product_name=product_name,
             product_desc=product_desc,
             category=category,
-            shipment = Shipment.objects.get(shipment=shipment),
             price=price,
             apply_discount=apply_discount,
             discount_percent=discount_percent,
             discounted_price=discount_price,
             brand=brand,
             publish_date=date.today(),
-            image=image_album,
+            image=album_name,
             is_featured=featured,
+            is_preorder=preorder,
             )
 
         n.save()
@@ -140,6 +243,7 @@ def product_add(request):
             delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time),
             buy_price = buy_price,
             price = price,
+            shipment = Shipment.objects.get(shipment=shipment),
             apply_discount = apply_discount,
             discount_percent = discount_percent,
             discounted_price = discount_price,
@@ -764,7 +868,125 @@ def shopHome(request):
     return render(request, 'app/home.html', context)
 
 
+def filter_by_cat_and_size(request, category, size):
+
+    cat = Category.objects.get(cat_slug=category)
+    cat_query = Category.objects.filter(cat_slug=category)
+    size_bucket = SizeBucket.objects.filter(size_name=SizeName.objects.filter(size_slug=size).first(),attribute__attribute_category=cat)
+    print("Size Bucket", size_bucket)
+
+
+    attribute = size_bucket.values_list('attribute', flat=True).order_by('id')
+    print("Attributes", attribute)
+
+    if cat_query.first():
+        cat_id = Category.objects.filter(cat_slug=category).first()
+
+
+        list_values = ProductVariant.objects.filter(attribute__in=attribute).values_list('variant', flat=True)
+        all_products = Product.objects.filter(product_id__in=list(list_values),category=cat_id.id,is_published=True).order_by('-updated_at')
+
+        sizes = None
+
+        if category != "cosmetics":
+            sizes = []
+            for each_product in all_products:
+                variants = ProductVariant.objects.filter( variant = each_product.product_id)
+                for each_variant in variants:
+                    sizes.append(each_variant.attribute.attribute)
+
+            sizes = set(sizes)
+
+            if request.POST.get("variant"):
+                variant = request.POST.getlist("variant")
+                filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+                list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+                all_products = Product.objects.filter(product_id__in=list(list_values),category=cat_id.id)
+
+        if request.POST.get("sort_by"):
+            sortby = request.POST.get("sort_by")
+            print("SORTBY", sortby)
+
+            if sortby == 'Price(High to Low)':
+                all_products = all_products.order_by('-discounted_price')
+
+            if sortby == 'Price(Low to High)':
+                all_products = all_products.order_by('discounted_price')
+
+            if sortby == 'Recently Added':
+                all_products = all_products.order_by('-updated_at')
+
+            if sortby == '% OFF':
+                all_products = all_products.order_by('-discount_percent')
+
+    else:
+        all_products = None
+
+
+
+    p = Paginator(all_products, 40)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+
+    all_products = page_obj
+
+
+    mega_dict={}
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
+
+
+    context = {'all_products': all_products, 'images': Image.objects.all(),
+            'all_variants':ProductVariant.objects.all(),
+              'images': Image.objects.all(),
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'all_brands':Brand.objects.all(),
+               'header_text':cat_query.first().cat_name,
+               'filter_button':False,
+               'sizes':sizes,
+                'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+                'category':Category.objects.filter(cat_slug=category).first(),
+               'page_obj':all_products,
+               'mega_dict':mega_dict,
+               'size_name':SizeName.objects.get(size_slug=size),
+
+               }
+
+    return render(request, 'app/home_searchby.html', context)
+
 def filter_by_cat(request, category):
+
+    cat = Category.objects.get(cat_slug=category)
+    # size_names = SizeName.objects.all()
+    size_names = SizeBucket.objects.filter(attribute__attribute_category=cat).values('size_name').distinct()
+    size_names = SizeName.objects.filter(id__in=size_names)
 
     cat_query = Category.objects.filter(cat_slug=category)
 
@@ -862,13 +1084,118 @@ def filter_by_cat(request, category):
                 'category':Category.objects.filter(cat_slug=category).first(),
                'page_obj':all_products,
                'mega_dict':mega_dict,
+               'size_names':size_names,
 
                }
 
     return render(request, 'app/home_searchby.html', context)
 
+def filter_by_brand_and_size(request, brand, size):
+
+    size_names = SizeBucket.objects.all().values('size_name').distinct()
+    size_names = SizeName.objects.filter(id__in=size_names)
+    size_bucket = SizeBucket.objects.filter(size_name=SizeName.objects.filter(size_slug=size).first())
+    attribute = size_bucket.values_list('attribute', flat=True).order_by('id')
+
+    brand_query = Brand.objects.filter(brand_slug=brand)
+
+    if brand_query.first():
+        brand_name = Brand.objects.filter(brand_slug=brand).first()
+        all_products = Product.objects.filter(brand=brand_name, is_published=True).order_by('-updated_at')
+
+        if brand != "e.l.f":
+            sizes = []
+            for each_product in all_products:
+                variants = ProductVariant.objects.filter( variant = each_product.product_id, attribute__in=attribute)
+                for each_variant in variants:
+                    sizes.append(each_variant.attribute.attribute)
+
+            if request.POST.get("variant"):
+                variant = request.POST.getlist("variant")
+                filtered_attributes = Attribute.objects.filter(attribute__in=variant)
+                list_values = ProductVariant.objects.filter(attribute__in=list(filtered_attributes)).values_list('variant', flat=True)
+                all_products = Product.objects.filter(product_id__in=list(list_values),attribute__in=attribute,brand=brand_name.id)
+
+        if request.POST.get("sort_by"):
+            sortby = request.POST.get("sort_by")
+            print("SORTBY", sortby)
+
+            if sortby == 'Price(High to Low)':
+                all_products = all_products.order_by('-discounted_price')
+
+            if sortby == 'Price(Low to High)':
+                all_products = all_products.order_by('discounted_price')
+
+            if sortby == 'Recently Added':
+                all_products = all_products.order_by('-updated_at')
+
+            if sortby == '% OFF':
+                all_products = all_products.order_by('discount_percent')
+
+    else:
+        all_products = None
+
+
+    p = Paginator(all_products, 40)  # creating a paginator object
+    # getting the desired page number from url
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+    # context = {'page_obj': page_obj}
+
+    all_products = page_obj
+
+
+    mega_dict={}
+
+    for each_product in all_products:
+        product_dict = dict.fromkeys(['product', 'variants', 'product_image'])
+        product_dict['product'] = each_product
+
+        variants = ProductVariant.objects.filter( variant = each_product.product_id)
+
+        product_variants=[]
+        for each_variant in variants:
+            product_variants.append(each_variant)
+
+        product_dict['variants']=product_variants
+
+        image_value = getattr(each_product, "image")
+        product_image = Image.objects.get(album=image_value, default=True)
+
+        product_dict['product_image'] = product_image
+        mega_dict[each_product.product_id] = product_dict
+
+
+    context = {'all_products': all_products,
+               #update later to only brand variants
+               'all_variants':ProductVariant.objects.all(),
+              'images': Image.objects.all(),
+               'sub_sub_categories': Sub_Sub_Category.objects.all(),
+               'sub_categories':Sub_Category.objects.all(),
+               'categories': Category.objects.all(),
+               'header_text':brand_query.first().brand_name,
+               'all_brands':Brand.objects.all(),
+              'sizes':set(sizes),
+                'sortby_options':['Choose option','Price(High to Low)','Price(Low to High)','Recently Added','% OFF'],
+                'brand':Brand.objects.filter(brand_slug=brand).first(),
+               'page_obj':all_products,
+               'mega_dict':mega_dict,
+               'size_names':size_names,
+               }
+
+    return render(request, 'app/home_searchby.html', context)
 
 def filter_by_brand(request, brand):
+
+    size_names = SizeBucket.objects.all().values('size_name').distinct()
+    size_names = SizeName.objects.filter(id__in=size_names)
 
     brand_query = Brand.objects.filter(brand_slug=brand)
 
@@ -962,6 +1289,7 @@ def filter_by_brand(request, brand):
                 'brand':Brand.objects.filter(brand_slug=brand).first(),
                'page_obj':all_products,
                'mega_dict':mega_dict,
+               'size_names':size_names,
                }
 
     return render(request, 'app/home_searchby.html', context)
@@ -1510,7 +1838,6 @@ def checkout_address(request):
     # return redirect('shop:cart')
     return render(request, 'app/checkout.html', context)
 
-
 def contact_us(request):
 
     if request.method == "POST":
@@ -1570,7 +1897,6 @@ def contact_us(request):
                'categories': Category.objects.all(),
                 'all_brands':Brand.objects.all(),}
         return render(request, 'app/contact_us.html', context)
-
 
 @login_required
 def order_summary(request):
@@ -1962,7 +2288,6 @@ def myorders(request):
 
     return render(request, 'app/myorders.html', context)
 
-
 @staff_member_required
 def allorders(request):
 
@@ -2070,3 +2395,23 @@ def preorder(request):
                }
 
     return render(request, 'app/preorderportal.html', context)
+
+
+
+# def test_elements():
+#     all_variants = ProductVariant.objects.all()
+#     for each_variant in all_variants:
+#         if each_variant.variant.category == each_variant.attribute.attribute_category:
+#             pass
+#         else:
+#             print("Different",each_variant,each_variant.variant.category,each_variant.attribute.attribute_category)
+#             att = Attribute.objects.filter(attribute=each_variant.attribute, attribute_category=each_variant.variant.category)
+#             if att.first():
+#                 print("Attribute", att)
+#                 each_variant.attribute = att.first()
+#                 each_variant.save()
+#             else:
+#                 print("First not found")
+#
+# test_elements()
+

@@ -57,6 +57,7 @@ class Image(models.Model):
     icon_image = models.ImageField(upload_to=get_icon_upload_path, null=True, blank=True)
 
     def __str__(self):
+        print("Image",self.image)
         return self.name
 
 class Category(models.Model):
@@ -134,6 +135,7 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False, blank=True)
     is_published = models.BooleanField(default=True, blank=True)
     on_sale = models.BooleanField(default=False, blank=True)
+    is_preorder = models.BooleanField(default=False, blank=True)
 
 
 
@@ -164,6 +166,12 @@ class DeliveryTime (models.Model):
 
         return self.delivery_time
 
+class SizeName(models.Model):
+    size_name = models.CharField(max_length=255, default='Newborn')
+    size_slug = AutoSlugField(populate_from='size_name', blank=True, null=True)
+
+    def __str__(self):
+        return '{}'.format(self.size_name)
 
 class Attribute (models.Model):
     attribute = models.CharField(max_length=250, null=True, blank=True)
@@ -173,6 +181,14 @@ class Attribute (models.Model):
     def __str__(self):
         # return '{} - {}'.format(self.attribute, self.attribute_category)
         return self.attribute
+
+class SizeBucket(models.Model):
+    size_name = models.ForeignKey(SizeName, on_delete=models.CASCADE, null=True, blank=True)
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.size_name, self.attribute)
+
 
 class Shipment(models.Model):
     shipment = models.IntegerField(default=1)
@@ -292,16 +308,17 @@ class Promo_Code (models.Model):
                     if self.promo_tag == each_tag.name:
                         each_product.on_sale = True
                         each_product.save()
-                    print(each_tag, "-->", each_product.on_sale)
+                    print(each_tag, "Add Sale -->", each_product.on_sale)
             return super(Promo_Code, self).save()
 
         if self.promo_type == 'tag_based' and self.promo_status == False:
+            print("Remove Tag")
             for each_product in Product.objects.all():
                 for each_tag in each_product.product_tags.all():
                     if self.promo_tag == each_tag.name:
                         each_product.on_sale = False
                         each_product.save()
-                    print(each_tag, "-->", each_product.on_sale)
+                    print(each_tag, "Remove Sale-->", each_product.on_sale)
             return super(Promo_Code, self).save()
 
 
@@ -402,7 +419,6 @@ class TCSPaymentPeriod(models.Model):
     def __str__(self):
         return '{}'.format(self.payment_period)
 
-
 class UserOrder(models.Model):
 
     STATUS_CHOICES = (
@@ -439,7 +455,7 @@ class UserOrder(models.Model):
 
 
     def __str__(self):
-        return '{} - {} - {} ---- [{}]'.format(self.author, self.order_id, self.status, self.social_address)
+        return '{} - {} ---- [{}]'.format(self.author, self.order_id, self.social_address)
 
 
 class Returns (models.Model):
@@ -478,4 +494,3 @@ class ContactUs(models.Model):
 
         return '{} - {}'.format(self.contact_id, self.name)
         # return f"{self.contact_id} - {self.name}"
-
