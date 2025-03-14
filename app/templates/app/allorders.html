@@ -39,7 +39,7 @@
               <!-- start accordion -->
               <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
 
-                  {% for order_key,each_order in order_dict_all.items reversed %}
+                  {% for order_key,each_order in order_dict_all.items %}
 
                   <div class="panel">
 
@@ -84,6 +84,7 @@
                                 <th class="column-title">Discounted Price </th>
                                 <th class="column-title">Quantity </th>
                                 <th class="column-title">Amount </th>
+                                <th class="column-title">S </th>
                                 <th class="column-title no-link last"><span class="nobr">View</span></th>
                                 <th class="bulk-actions" colspan="7">
                                 <a class="antoo" style="color:#fff; font-weight:500;">Bulk Actions ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
@@ -95,19 +96,19 @@
                                 <tr class="even pointer">
                                     <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
                                     <td class=" ">
-                                    <img style="max-width: 70px; and height: auto;"  src="/media/{{each_key}}" alt="image" />
+                                    <img style="max-width: 70px; and height: auto;"  src="/media/{{each_key.0}}" alt="image" />
                                     </td>
                                   <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
                                   <td class=" ">{{each_item.product_variant.attribute}} </td>
-                                  <td class="a-right a-right ">{{each_item.product_variant.price}}</td>
+                                  <td class="a-right a-right ">{{each_item.item_price}}</td>
 
                                   {% if each_item.product_variant.apply_discount %}
-                                <td class="a-right a-right ">{{each_item.product_variant.discount_percent}}%</td>
-                              <td class="a-right a-right ">{{each_item.product_variant.discounted_price}}</td>
+                                <td class="a-right a-right ">{{each_item.item_discount_percent}}%</td>
+                              <td class="a-right a-right ">{{each_item.item_discount_price}}</td>
 
                                     {% endif %}
                                   {% if each_item.product_variant.apply_discount != True %}
-                                  <td class="a-right a-right ">{{each_item.product_variant.price}} Rs </td>
+                                  <td class="a-right a-right ">{{each_item.item_discount_price}} Rs </td>
                                   {% endif %}
 
                                   <td class=" ">
@@ -115,6 +116,7 @@
                                   </td>
 
                                   <td class=" ">{{each_item.total_amount}}</td>
+                                    <td class=" ">S{{each_item.product_variant.shipment}}</td>
 
                                   <td class=" last"><a href="{% url 'shop:productview' id=each_item.product_variant.variant.product_id %}" >View</a>
 
@@ -151,13 +153,14 @@
 
                             </td>
                             <td style="width:50%">
-                            <b>Total(Before Savings)</b>: {{each_order.order.order_cart.grand_total}} Rs<br>
+                            <b>Total (Before Savings)</b>: {{each_order.order.order_cart.grand_total}} Rs<br>
                             <b>Delivery Charges</b>: {{each_order.order.order_cart.delivery_charges}} Rs<br>
                             {% if each_order.order.order_cart.cart_promo_flag %}
                                    <b>Promo Savings</b>: {{each_order.order.order_cart.cart_promo_savings}} Rs<br>
                             {% endif %}
                           <b>Savings</b>: {{each_order.order.order_cart.cart_savings_total}} Rs<br>
                           <br><b>Total</b>: {{each_order.order.order_cart.cart_total}} Rs<br>
+                                <b>Payment Mode:</b> {{each_order.order.payment_type}}
 
 
                             </td>
@@ -177,6 +180,28 @@
 
               </div>
               <!-- end of accordion -->
+
+
+                <center><ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                  {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+              </ul></center>
+
             </div>
           </div>
         </div>

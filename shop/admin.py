@@ -6,17 +6,23 @@ from django.contrib.admin import ModelAdmin
 class UserOrderAdmin(admin.ModelAdmin):
     list_filter = ('tcsorder',)
 
+class ImageAlbumAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
 
-admin.site.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    search_fields = ('product_id',)
+
+
+admin.site.register(Product, ProductAdmin)
 admin.site.register(UserOrder, UserOrderAdmin)
 admin.site.register(OrderUpdate)
 admin.site.register(ContactUs)
 admin.site.register(Image)
-admin.site.register(ImageAlbum)
+admin.site.register(ImageAlbum, ImageAlbumAdmin)
 admin.site.register(Category)
 admin.site.register(Sub_Category)
 admin.site.register(Sub_Sub_Category)
-admin.site.register(ProductVariant)
+admin.site.register(ProductVariant,)
 # admin.site.register(Attribute)
 
 
@@ -38,6 +44,7 @@ admin.site.register(TCSPaymentPeriod)
 admin.site.register(Shipment)
 admin.site.register(SizeBucket)
 admin.site.register(SizeName)
+admin.site.register(MainOrder)
 # admin.site.register(Size)
 list_display = ('tcsorder',)
 search_fields = ('tcsorder',)
@@ -46,8 +53,9 @@ list_filter = ('tcsorder',)
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('attribute', 'attribute_category')
 admin.site.register(Attribute, AttributeAdmin)
+
+
 #
 # class UserOrderAdmin(admin.ModelAdmin):
 #     list_display = ('tcsorder',)
 #     list_filter = ('tcsorder',)
-

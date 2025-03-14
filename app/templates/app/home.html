@@ -187,41 +187,35 @@
     </div>
   </a>
 
-    <div class="row">
+          <div class="row">
 
       <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel tile" style="height:360px;">
           <div class="x_title">
-            <h2>Recently Added - Kids Clothing</h2>
+            <h2>Recently Added - InStock Items</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content" style="margin-top:-20px;">
                 <div class="row">
                     <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel"  data-interval="1000">
                         <div class="MultiCarousel-inner">
-                          {% for each_product in all_products %}
+                            {% for each_key,each_dict in mega_dict.items %}
+
                             <div class="item">
                                   <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
                                     <div class="image view view-first" style="height:auto;">
-
-                                      {% for each_image in images %}
-                                        {% if each_image.album == each_product.image %}
-                                          {% if each_image.default == True %}
-                                            <a href="/productview/{{each_product.product_id}}">
-                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.icon_image}}" alt="image" />
+                                        <a href="/productview/{{each_dict.product.product_id}}">
+                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_dict.product_image.icon_image}}" alt="image" />
                                             </a>
-                                          {% endif %}
-                                        {% endif %}
-                                      {% endfor %}
                                     </div>
                                     <div class="caption">
-                                      <p style="font-size:12px;"><strong>{{each_product.brand}} </strong>{{each_product.product_name}}</p>
-                                      <p style="text-decoration:line-through;style="font-size:12px;"">{{each_product.price}} PKR</p>
+                                      <p style="font-size:12px;"><strong>{{each_dict.product.brand}} </strong>{{each_dict.product.product_name}}</p>
+                                      <p style="text-decoration:line-through;font-size:12px;">{{each_dict.product.price}} PKR</p>
 
-                                      {% if each_product.discount_percent != None %}
-                                      <p style="font-size:12px;">{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
+                                      {% if each_dict.product.discount_percent != None %}
+                                      <p style="font-size:12px;">{{each_dict.product.discounted_price}} PKR  <strong style="color:red;">({{each_dict.product.discount_percent}}% OFF)</strong> </p>
                                       {% endif  %}
-                                      {% if each_product.discount_percent == None %}
+                                      {% if each_dict.product.discount_percent == None %}
                                       <p> <br></p>
                                       {% endif  %}
                                     </div>
@@ -229,11 +223,62 @@
 
                                 </div>
                           {% endfor %}
+
                         </div>
                         <button class="btn btn-primary leftLst"><</button>
                         <button class="btn btn-primary rightLst">></button>
                     </div>
                 </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+          <div class="row">
+
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel tile" style="height:360px;">
+          <div class="x_title">
+            <h2>Recently Added - PreOrder Items</h2>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content" style="margin-top:-20px;">
+                <div class="row">
+                    <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel"  data-interval="1000">
+                        <div class="MultiCarousel-inner">
+                            {% for each_key,each_dict in mega_preorder_dict.items %}
+
+                            <div class="item">
+                                  <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
+                                    <div class="image view view-first" style="height:auto;">
+                                        <a href="/productview/{{each_dict.product.product_id}}">
+                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_dict.product_image.icon_image}}" alt="image" />
+                                            </a>
+                                    </div>
+                                    <div class="caption">
+                                      <p style="font-size:12px;"><strong>{{each_dict.product.brand}} </strong>{{each_dict.product.product_name}}</p>
+                                      <p style="text-decoration:line-through;font-size:12px;">{{each_dict.product.price}} PKR</p>
+
+                                      {% if each_dict.product.discount_percent != None %}
+                                      <p style="font-size:12px;">{{each_dict.product.discounted_price}} PKR  <strong style="color:red;">({{each_dict.product.discount_percent}}% OFF)</strong> </p>
+                                      {% endif  %}
+                                      {% if each_dict.product.discount_percent == None %}
+                                      <p> <br></p>
+                                      {% endif  %}
+                                    </div>
+                                  </div>
+
+                                </div>
+                          {% endfor %}
+
+                        </div>
+                        <button class="btn btn-primary leftLst"><</button>
+                        <button class="btn btn-primary rightLst">></button>
+                    </div>
+                </div>
+
           </div>
         </div>
 

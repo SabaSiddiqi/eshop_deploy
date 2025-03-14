@@ -82,23 +82,23 @@
                             </tr>
                           </thead>
                           <tbody>
-                              {% for each_key,each_item in each_order.items_list.items %}
+                            {% for each_key,each_item in each_order.items_list.items %}
                                 <tr class="even pointer">
                                     <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
                                     <td class=" ">
-                                    <img style="max-width: 70px; and height: auto;" src="/media/{{each_key}}" alt="image" />
+                                    <img style="max-width: 70px; and height: auto;"  src="/media/{{each_key}}" alt="image" />
                                     </td>
                                   <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
                                   <td class=" ">{{each_item.product_variant.attribute}} </td>
-                                  <td class="a-right a-right ">{{each_item.product_variant.price}}</td>
+                                  <td class="a-right a-right ">{{each_item.item_price}}</td>
 
                                   {% if each_item.product_variant.apply_discount %}
-                                <td class="a-right a-right ">{{each_item.product_variant.discount_percent}}%</td>
-                              <td class="a-right a-right ">{{each_item.product_variant.discounted_price}}</td>
+                                <td class="a-right a-right ">{{each_item.item_discount_percent}}%</td>
+                              <td class="a-right a-right ">{{each_item.item_discount_price}}</td>
 
                                     {% endif %}
                                   {% if each_item.product_variant.apply_discount != True %}
-                                  <td class="a-right a-right ">{{each_item.product_variant.price}} Rs </td>
+                                  <td class="a-right a-right ">{{each_item.item_discount_price}} Rs </td>
                                   {% endif %}
 
                                   <td class=" ">
@@ -112,7 +112,6 @@
                                   </td>
                                 </tr>
                                 {% endfor %}
-
                         </table>
                           <table class="table table-striped">
                           <thead>

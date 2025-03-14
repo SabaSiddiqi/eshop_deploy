@@ -19,6 +19,12 @@ def get_icon_upload_path(instance, filename):
     print("Upload to", filename)
     return "images/%s/icon/%s" % (title,filename)
 
+def get_real_upload_path(instance, filename):
+    title = instance.album.name
+    # slug = slugify(title)
+    print("Upload to", filename)
+    return "images/%s/real/%s" % (title,filename)
+
 class Banner(models.Model):
     banner_text = models.CharField(max_length=255)
     banner_image = models.ImageField(upload_to='banner', null=True)
@@ -27,25 +33,21 @@ class Logo(models.Model):
     logo_text = models.CharField(max_length=255)
     logo_image = models.ImageField(upload_to='logo', null=True)
 
-
 class SubscriptionList(models.Model):
     subscribe_user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     subscribe_date_time = models.DateTimeField(auto_now=True,null=True,blank=True)
     subscribe_status = models.BooleanField(default=False)
-
 
 class HtmlField(models.Model):
     hf_name = models.CharField(max_length=255)
     hf_value = models.TextField( null=True, blank=True)
     my_field = tinymce_models.HTMLField(blank=True)
 
-
 class ImageAlbum(models.Model):
     name = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.name
-
 
 class Image(models.Model):
     name = models.CharField(max_length=255, default="name")
@@ -55,6 +57,7 @@ class Image(models.Model):
     # length = models.FloatField(default=100)
     album = models.ForeignKey(ImageAlbum, related_name='images', on_delete=models.CASCADE,null=True)
     icon_image = models.ImageField(upload_to=get_icon_upload_path, null=True, blank=True)
+    real_image = models.ImageField(upload_to=get_real_upload_path, null=True, blank=True)
 
     def __str__(self):
         print("Image",self.image)
@@ -69,7 +72,6 @@ class Category(models.Model):
     def __str__(self):
         return self.cat_name
 
-
 class Sub_Category(models.Model):
     cat = models.ForeignKey(Category, on_delete=models.CASCADE,null=True)
     sub_cat_name = models.CharField(max_length=225, null=True)
@@ -78,7 +80,6 @@ class Sub_Category(models.Model):
 
     def __str__(self):
         return self.sub_cat_name
-
 
 class Sub_Sub_Category(models.Model):
 
@@ -110,6 +111,16 @@ class Brand (models.Model):
         return self.brand_name
 
 
+class MainOrder (models.Model):
+    order_date = models.DateField(null=True, blank=True)
+    order_number = models.CharField(max_length=255, null=True, blank=True)
+    order_brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)
+
+    # def __str__(self):
+    #     return '{} - {} - {}'.format(self.order_date, self.order_number, self.order_brand)
+
+
+
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=255)
@@ -120,16 +131,16 @@ class Product(models.Model):
     product_tags = TaggableManager(blank=True)
 
 
-    price = models.IntegerField(null=True)
+    price = models.IntegerField(null=True, blank=True)
     apply_discount = models.BooleanField(default=False, blank=True)
-    discount_percent = models.IntegerField(null=True)
+    discount_percent = models.IntegerField(null=True, blank=True)
     discounted_price = models.IntegerField(blank=True, null=True)
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)
 
-    publish_date = models.DateField()
+    publish_date = models.DateField(null=True, blank=True)
 
-    image = models.ForeignKey(ImageAlbum, on_delete=models.CASCADE, null=True)
+    image = models.ForeignKey(ImageAlbum, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False, blank=True)
@@ -157,7 +168,6 @@ class Product(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.product_id, self.product_name)
         # return f"{self.product_id} - {self.product_name}"
-
 
 class DeliveryTime (models.Model):
     delivery_time = models.CharField(max_length=250, null=True, blank=True,unique=True)
@@ -208,25 +218,23 @@ class Shipment(models.Model):
 
         return '{}'.format(self.shipment)
 
-
-
 class ProductVariant(models.Model):
+
+    main_order = models.ForeignKey(MainOrder, on_delete=models.CASCADE, null=True, blank=True)
     variant = models.ForeignKey(Product, on_delete=models.CASCADE)
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
-    delivery_time = models.ForeignKey(DeliveryTime, on_delete=models.CASCADE)
-
+    delivery_time = models.ForeignKey(DeliveryTime, on_delete=models.CASCADE, null=True, blank=True)
 
     buy_price = models.FloatField(blank=True, null=True)
-    price = models.IntegerField(null=True)
+    price = models.IntegerField(null=True, blank=True)
 
     apply_discount = models.BooleanField(default=False, blank=True)
-    discount_percent = models.IntegerField(null=True)
+    discount_percent = models.IntegerField(null=True, blank=True)
     discounted_price = models.IntegerField(blank=True, null=True)
 
-
-    total_pcs=models.IntegerField(default=1, null=True, blank=True)
-    num_available=models.IntegerField(default=1)
-    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
+    total_pcs = models.IntegerField(default=1, null=True, blank=True)
+    num_available = models.IntegerField(default=1)
+    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE, null=True, blank=True)
     shipment_charges = models.FloatField(default=1,blank=True, null=True)
 
     savings_item = models.IntegerField(blank=True, null=True)
@@ -236,13 +244,21 @@ class ProductVariant(models.Model):
             self.shipment_charges = self.shipment.shipment_charges_per_item
         else:
             self.shipment_charges = 1
+
+        if self.apply_discount:
+            # self.discounted_price = self.price - (self.price * self.discount_percent / 100)
+            self.savings_item = self.price - self.discounted_price
+
+        else:
+            self.savings_item = 0
+            # self.discounted_price = self.price
+
         return super(ProductVariant, self).save()
 
     def __str__(self):
         return '{} - {}'.format(self.variant, self.attribute)
 
         # return f"{self.variant} - {self.attribute}"
-
 
 #cart notifications
 #save for only two hours
@@ -264,25 +280,25 @@ class Cart (models.Model):
     tcs_delivery_charges = models.FloatField(null=True, blank=True)
     delivery_charges_per_item = models.FloatField(blank=True, null=True)
 
-
-
-    def save(self, *args, **kwargs):
-
-        if self.promo_cart_total > 2000:
-            self.delivery_charges = 0
-            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
-        else:
-            self.delivery_charges = 200
-            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
-
-        if self.cart_total > 2000:
-            self.delivery_charges = 0
-            self.cart_total = self.cart_total + self.delivery_charges
-        else:
-            self.delivery_charges = 200
-            self.cart_total = self.cart_total + self.delivery_charges
-
-        return super(Cart, self).save()
+    # def save(self, *args, **kwargs):
+    #
+    #     #
+    #     #
+    #     # if self.promo_cart_total > 2999:
+    #     #     self.delivery_charges = 0
+    #     #     self.promo_cart_total = self.promo_cart_total + self.delivery_charges
+    #     # else:
+    #     #     self.delivery_charges = 250
+    #     #     self.promo_cart_total = self.promo_cart_total + self.delivery_charges
+    #
+    #     if self.cart_total > 2999:
+    #         self.delivery_charges = 0
+    #         self.cart_total = self.cart_total + self.delivery_charges
+    #     else:
+    #         self.delivery_charges = 250
+    #         self.cart_total = self.cart_total + self.delivery_charges
+    #
+    #     return super(Cart, self).save()
 
     def __str__(self):
         return '{} - {}'.format(self.author, self.cart_ordered)
@@ -303,6 +319,7 @@ class Promo_Code (models.Model):
 
     def save(self):
         if self.promo_type == 'tag_based' and self.promo_status == True:
+            print("Add Tag")
             for each_product in Product.objects.all():
                 for each_tag in each_product.product_tags.all():
                     if self.promo_tag == each_tag.name:
@@ -318,7 +335,22 @@ class Promo_Code (models.Model):
                     if self.promo_tag == each_tag.name:
                         each_product.on_sale = False
                         each_product.save()
-                    print(each_tag, "Remove Sale-->", each_product.on_sale)
+                    # print(each_tag, "Remove Sale-->", each_product.on_sale)
+            return super(Promo_Code, self).save()
+
+        if self.promo_type == 'on_demand' and self.promo_status == True:
+            print("Add on demand")
+            for each_product in Product.objects.all():
+                each_product.on_sale = True
+                each_product.save()
+
+            return super(Promo_Code, self).save()
+
+        if self.promo_type == 'on_demand' and self.promo_status == False:
+            print("Remove on demand")
+            for each_product in Product.objects.all():
+                each_product.on_sale = False
+                each_product.save()
             return super(Promo_Code, self).save()
 
 
@@ -327,6 +359,9 @@ class Cart_Items (models.Model):
     product_variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE, blank=True, null=True)
     product_quantity = models.IntegerField(default=0, blank=True, null=True)
     add_date_time = models.DateTimeField(auto_now=True,null=True,blank=True)
+    item_price = models.IntegerField(default=0, blank=True, null=True)
+    item_discount_percent = models.IntegerField(default=0, blank=True, null=True)
+    item_discount_price = models.IntegerField(default=0, blank=True, null=True)
     total_amount = models.IntegerField(default=0, blank=True, null=True)
     promo_unit_amount = models.IntegerField(default=0, blank=True, null=True)
     promo_total_amount = models.IntegerField(default=0, blank=True, null=True)
@@ -360,11 +395,11 @@ class Cart_Items (models.Model):
             self.profit_pkr = (self.total_amount-self.delivery_charges_per_item) - (self.product_variant.buy_price*self.product_variant.shipment.shipment_rate)
 
         if self.add_date_time:
-            print("Add Date", self.add_date_time)
+            # print("Add Date", self.add_date_time)
             d = self.add_date_time
-            print(d)
-            print(d.strftime("%Y-%m-%d %H:%M:%S"))
-            print(timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S"))
+            # print(d)
+            # print(d.strftime("%Y-%m-%d %H:%M:%S"))
+            # print(timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S"))
             self.add_date_time = timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S")
         else:
             print("None returned")
@@ -382,6 +417,7 @@ class DeliveryAddress(models.Model):
     province = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return '{} - {}'.format(self.author, self.full_name)
@@ -405,6 +441,7 @@ class SocialDeliveryAddress(models.Model):
 
 class TCSPaymentPeriod(models.Model):
     payment_period = models.CharField(max_length=255, blank=True)
+    booking_date = models.DateField(null=True, blank=True)
     delivery_charges = models.FloatField(null=True, blank=True)
     cod_total = models.IntegerField(blank=True, null=True)
     cod_return = models.IntegerField(blank=True, null=True)
@@ -429,6 +466,12 @@ class UserOrder(models.Model):
         ('cancelled', 'CANCELLED'),
     )
 
+    PAYMENT_TYPE = (
+        ('cod', 'COD'),
+        ('bank_transfer', 'BANK TRANSFER'),
+        ('gift', 'GIFT'),
+    )
+
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     tcsorder = models.ForeignKey(TCSPaymentPeriod,on_delete=models.CASCADE, blank=True, null=True)
     order_id = models.AutoField(primary_key=True)
@@ -437,6 +480,7 @@ class UserOrder(models.Model):
     social_address = models.ForeignKey(SocialDeliveryAddress, on_delete=models.CASCADE, blank=True, null=True)
     ordered_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='active')
+    payment_type = models.CharField(max_length=255, choices=PAYMENT_TYPE, default='cod')
     tracking_id = models.CharField(max_length=255, blank=True)
     booking_date = models.DateField(null=True, blank=True)
     delivery_charges = models.FloatField(null=True, blank=True)

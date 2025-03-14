@@ -25,5 +25,6 @@ urlpatterns = [
     path('', include('shop.urls')),
     path('tinymce/', include('tinymce.urls')),
     path('oauth/', include('social_django.urls', namespace='social')),  # <--
+    path("convert/", include("guest_user.urls")),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

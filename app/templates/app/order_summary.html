@@ -52,7 +52,7 @@
                 <div class="form-group">
                   <label class="control-label col-md-3 col-sm-3 col-xs-12">Email Address</label>
                   <div class="col-md-9 col-sm-9 col-xs-12">
-                    <input type="text" class="form-control" readonly="readonly" value="{{user.email}}">
+                    <input type="text" class="form-control" readonly="readonly" value="{{address_query.email}}">
                   </div>
                 </div>
 
@@ -110,7 +110,7 @@
                 </thead>
 
                 <tbody>
-                {% for each_key,each_item in order_dict.items %}
+                {% for each_item,each_key in order_dict.items %}
                   <tr>
                     <th scope="row">{{each_item.product_variant.variant.product_id}}</th>
                     <td>
