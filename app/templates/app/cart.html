@@ -192,7 +192,7 @@ foreach($_SESSION["cart_item"] as $item) {
                         var n = D.getTimezoneOffset() * 60000 ;
                         var G = date - D
                         var F = n - G
-                        var time_left = 30*60000 - F
+                        var time_left = 60*60000 - F
 
                         if (time_left >= 0) { timer({{each_item.product_variant.variant.product_id }}, (time_left/1000).toFixed(0)); }
                         if (time_left < 0) { timer({{each_item.product_variant.variant.product_id }}, 0); }

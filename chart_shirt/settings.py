@@ -49,9 +49,11 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     # "countdowntimer_model",
     'shop.apps.ShopConfig',
+    'django_extensions',
     'tinymce',
     'social_django',
     'hitcount',
+    'taggit',
 ]
 
 SITE_ID = 1
@@ -104,13 +106,28 @@ WSGI_APPLICATION = 'chart_shirt.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'iyraseshop$iyraseshopdb',
+        'USER': 'iyraseshop',
+        'PASSWORD': 'Iyr@Atif',
+        'HOST': 'iyraseshop.mysql.pythonanywhere-services.com',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

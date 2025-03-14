@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 {% load static %}
+{% load humanize %}
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
 	<!--[if gte mso 9]>
@@ -20,7 +21,7 @@
     <!--[if !mso]><!-->
    	<link href="https://fonts.googleapis.com/css?family=Quicksand:400,400i,700,700i|Barlow+Condensed:400,400i,700,700i" rel="stylesheet"/>
     <!--<![endif]-->
-	<title>Iyra's Eshop | Account Created</title>
+	<title>Iyra's Eshop | Order Placed</title>
 	<!--[if gte mso 9]>
 	<style type="text/css" media="all">
 		sup { font-size: 100% !important; }
@@ -150,7 +151,7 @@
 													<table width="100%" border="0" cellspacing="0" cellpadding="0">
 														<tr>
 															<th class="column" width="144" style="font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;">
-																<div class="img-center" style="font-size:0pt; line-height:0pt; text-align:center;"><a href="{{site}}" target="_blank"><img src="https://iyraseshop.com/media/{{logo}}/" border="0" width="150px" height="100%" alt="" /></a></div>
+																<div class="img-center" style="font-size:0pt; line-height:0pt; text-align:center;"><a href="{{site}}" target="_blank"><img src="https://iyraseshop.com/media/logo/logo_iyraseshop.jpg/" border="0" width="150px" height="100%" alt="" /></a></div>
 															</th>
 															<th class="column" width="20" style="font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;"><div style="font-size:0pt; line-height:0pt;" class="m-br-10"></div></th>
 															<th class="column" style="font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;">
@@ -198,7 +199,7 @@
 												<td class="td" style="width:650px; min-width:650px; font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;">
 													<table width="100%" border="0" cellspacing="0" cellpadding="0">
 														<tr>
-															<td class="h1-1-white centered p-25-15" style="padding: 10px; color:#ffffff; font-family:'Barlow Condensed', Arial,sans-serif; font-size:25px; line-height:52px; text-align:center;" bgcolor="#00CED1">
+															<td class="h1-1-white centered p-25-15" style="padding: 2px; color:#ffffff; font-family:'Barlow Condensed', Arial,sans-serif; font-size:20px; line-height:52px; text-align:center;" bgcolor="#00CED1">
 																Hi {{username}}! Your order has been placed.
 															</td>
 														</tr>
@@ -243,36 +244,46 @@
 				<div style="margin:0px 50px 50px 50px;">
                 <table class="col-md-12 col-sm-12 col-xs-12" width="100%" border="0px" cellspacing="0" cellpadding="0">
                   <thead>
-                    <tr style="border-bottom: 1px solid black;font-size:13px;">
-                    <th  >ID </th>
-                      <th  >Name </th>
-                      <th >Size </th>
-                        <th  >Price </th>
-                      <th >Quantity </th>
-                      <th class="column-title" >Amount </th>
-                      <th  >View</span>
+                    <tr style="text-align:left;border-bottom: 1px solid black;font-size:12px;">
+                    <th>ID </th>
+                      <th>Name </th>
+                      <th>Size </th>
+                        <th>Quantity</th>
+                      <th>Price/Unit </th>
+                      <th class="column-title" >Price </th>
+                      <th>View</span>
                       </th>
                     </tr>
                   </thead>
                   <tbody>
 
                   {% for each_item in user_cart %}
-                    <tr class="even pointer" style="font-size:10px">
+                    <tr class="even pointer" style="font-size:12px">
                       <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
-                      <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
-                      <td class=" ">{{each_item.product_variant.attribute}} </td>
+						<td>{{each_item.product_variant.variant.product_name}}</td>
+                    <td>{{each_item.product_variant.attribute}}</td>
+                      <td>{{each_item.product_quantity}}</td>
+
+
+
                       {% if each_item.product_variant.apply_discount %}
-                      <td class="a-right a-right ">{{each_item.product_variant.discounted_price}} Rs</td>
+							{% if cart.cart_promo_flag %}
+							<td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma  }} </del>  <del>{{each_item.product_variant.discounted_price|intcomma}} </del>{{each_item.promo_unit_amount|intcomma}}  </td>
+							{% else %}
+							<td style="color:red;"> <del style="color:#73879C;" >{{each_item.product_variant.price|intcomma}} Rs</del> {{each_item.product_variant.discounted_price|intcomma}} Rs  </td>
+							{% endif %}
                       {% endif %}
+
+
                       {% if each_item.product_variant.apply_discount != True %}
-                      <td class="a-right a-right ">{{each_item.product_variant.price}} Rs </td>
+                      <td>{{each_item.product_variant.price|intcomma}} Rs </td>
                       {% endif %}
 
-                      <td class=" ">
-                        {{each_item.product_quantity}}
-                      </td>
-
-                      <td class=" ">{{each_item.total_amount}}</td>
+                    {% if cart.cart_promo_flag %}
+                    <td>{{each_item.promo_total_amount|intcomma}}</td>
+                    {% else %}
+                    <td>{{each_item.total_amount|intcomma}}</td>
+                    {% endif %}
 
                       <td class=" last"><a href="https://www.iyraseshop.com/productview/{{each_item.product_variant.variant.product_id}}" >View</a>
 
@@ -282,7 +293,50 @@
                   {% endfor %}
 
                   </tbody>
-                </table></div>
+
+
+                </table>
+
+
+					<br>
+
+					<div align="left">
+						<b>Order Summary:</b>
+						<p>Sub Total: {{cart.grand_total|intcomma}} Rs</p>
+						<p>Delivery Charges: {{cart.delivery_charges|intcomma}} Rs</p>
+						<p>Savings: -{{cart.cart_savings_total|intcomma}} Rs</p>
+						<p>PROMO Savings:
+						    {% if cart.cart_promo_flag %}
+                            -{{cart.cart_promo_savings|intcomma}} Rs
+                            {% else %}
+                            0 Rs
+                            {% endif %}
+
+						</p>
+						<p>Total:
+							{% if cart.cart_promo_flag %} {{cart.promo_cart_total|intcomma}} Rs
+                    		{% else %}  {{cart.cart_total|intcomma}} Rs
+                    		{% endif %}</p>
+					</div>
+
+
+					<br>
+
+
+				<div align="left">
+					<b>Shipping Address & Details:</b>
+					<p>Name: {{address.full_name}}</p>
+					<p>Mobile Number: {{address.mobile_number}}</p>
+					<p>Email Address: {{user.email}}</p>
+					<p>Address: {{address.address}}, {{address.city}}, Pakistan</p>
+				</div>
+
+					<br>
+
+					<div align="left">Please reply back to this email if you have any queries and we will get back to you. Thank you! </div>
+
+
+				</div>
                                 <table>
 							<tr>
 								<td align="center">

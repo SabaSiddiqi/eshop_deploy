@@ -1,0 +1,103 @@
+{% extends "app/base_site.html" %}
+{% block title %} Add Products {% endblock title %}
+
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Dropzone.js -->
+  <link href="/static/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Submit a Return for - {{variant}}</h3>
+          <br>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_content">
+              <br />
+              <form id="return_item" name="retur_nitem"  data-parsley-validate class="form-horizontal form-label-left"
+                    action="{% url 'shop:returnitem' variant_id=variant.id %}" method="post" >
+                {% csrf_token %}
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_image">Product Image <span class="required" ></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <td style="width:75px;padding:2px;"><img style="width:70px;display:block;" src="/media/{{image.icon_image}}"></td>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_name">Product Name <span class="required" ></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="product_name" name="product_name" required="required" class="form-control col-md-7 col-xs-12" value="{{variant.variant}}" readonly>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_desc">Product Description<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="product_desc" name="product_desc" required="required" class="form-control col-md-7 col-xs-12" value="{{variant.variant.product_desc}}" readonly>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="product_desc">Product Size<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="size" name="size" required="required" class="form-control col-md-7 col-xs-12" value="{{variant.attribute}}" readonly>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="price">Return Shipping Cost<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="number" id="return_cost" name="return_cost" required="required" min="0" max="1000" class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="discount_percent">Return Reason<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="return_reason" name="return_reason" required="required"  class="form-control col-md-7 col-xs-12" value="" >
+                  </div>
+                </div>
+
+                <div class="ln_solid"></div>
+
+                <div class="form-group">
+                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                    <button style="margin-top:5px;" type="submit" class="btn btn-danger" >Return Item</button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}
+
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Dropzone.js -->
+  <script src="/static/vendors/dropzone/dist/min/dropzone.min.js"></script>
+{% endblock javascripts %}

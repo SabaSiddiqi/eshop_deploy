@@ -15,7 +15,9 @@ urlpatterns = [
     path('minus_quantity/<int:product_id>/<str:attribute>/', views.minus_quantity, name='minus_quantity'),
     path('check_cart/', views.check_carts, name='check_carts'),
     path('searchbycategory/<str:category>/', views.filter_by_cat, name='filter_by_cat'),
+    path('searchbytag/<str:tag>/', views.filter_by_tag, name='filter_by_tag'),
     path('searchbybrand/<str:brand>/', views.filter_by_brand, name='filter_by_brand'),
+    path('searchbytag/<str:tag>/', views.filter_by_tag, name='filter_by_tag'),
     path('searchby/<str:category>/<str:sub_category>/', views.filter_by_subcat, name='filter_by_subcat'),
     path('checkout/address/', views.checkout_address, name='checkout_address'),
     path('checkout/summary/', views.order_summary, name='order_summary'),
@@ -37,8 +39,8 @@ urlpatterns = [
     path('removevariant/<int:variant_id>/', views.remove_variant, name='removevariant'),
     path('addvariant/<int:product_id>/', views.add_variant, name='addvariant'),
 
-
-
+    path('solditems/', views.solditems, name='solditems'),
+    path('returnitem/<int:variant_id>/', views.returnitem, name='returnitem'),
 
     path('productview/<int:id>/', views.productview, name='productview'),
     path('productview/<int:id>/<str:attribute_slug>/', views.productview_details, name='productview_details'),
@@ -47,13 +49,6 @@ urlpatterns = [
     path('publish/<int:product_id>/', views.publish, name='publish'),
     path('unpublish/<int:product_id>/', views.unpublish, name='unpublish'),
 
-
-
-
-
-
-
 ]
 
 
-# start()

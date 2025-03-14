@@ -179,7 +179,7 @@
                 <div class="row">
                     <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel"  data-interval="1000">
                         <div class="MultiCarousel-inner">
-                          {% for each_product in all_products reversed %}
+                          {% for each_product in all_products %}
                             <div class="item">
                                   <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
                                     <div class="image view view-first" style="height:auto;">
@@ -188,7 +188,7 @@
                                         {% if each_image.album == each_product.image %}
                                           {% if each_image.default == True %}
                                             <a href="/productview/{{each_product.product_id}}">
-                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.image}}" alt="image" />
+                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.icon_image}}" alt="image" />
                                             </a>
                                           {% endif %}
                                         {% endif %}
@@ -216,54 +216,6 @@
                 </div>
           </div>
         </div>
-        <div class="x_panel tile" style="height:360px;">
-          <div class="x_title">
-            <h2>Recently Added - Cosmetics </h2>
-            <div class="clearfix"></div>
-          </div>
-          <div class="x_content" style="margin-top:-20px;">
-                <div class="row">
-                    <div class="MultiCarousel " data-items="2,3,5,6" data-slide="1" id="MultiCarousel1"  data-interval="1000">
-                        <div class="MultiCarousel-inner">
-                          {% for each_product in cosmetics reversed %}
-                          <!--{% if each_product.is_featured %}-->
-                            <div class="item">
-                                  <div class="thumbnail" style="background-color:#F7F7F7;height:290px;">
-                                    <div class="image view view-first" style="height:auto;">
-
-                                      {% for each_image in images %}
-                                        {% if each_image.album == each_product.image %}
-                                          {% if each_image.default == True %}
-                                            <a href="/productview/{{each_product.product_id}}">
-                                            <img style="  width:100%;height: 100%;object-fit: cover;" src="/media/{{each_image.image}}" alt="image" />
-                                            </a>
-                                          {% endif %}
-                                        {% endif %}
-                                      {% endfor %}
-                                    </div>
-                                    <div class="caption">
-                                      <p style="font-size:12px;"><strong>{{each_product.brand}} </strong>{{each_product.product_name}}</p>
-                                      <p style="text-decoration:line-through;font-size:12px;">{{each_product.price}} PKR</p>
-
-                                      {% if each_product.discount_percent != None %}
-                                      <pstyle="font-size:12px;">{{each_product.discounted_price}} PKR  <strong style="color:red;">({{each_product.discount_percent}}% OFF)</strong> </p>
-                                      {% endif  %}
-                                      {% if each_product.discount_percent == None %}
-                                      <p> <br></p>
-                                      {% endif  %}
-                                    </div>
-                                  </div>
-
-                                </div>
-                          <!--{% endif %}-->
-                          {% endfor %}
-                        </div>
-                        <button class="btn btn-primary leftLst"><</button>
-                        <button class="btn btn-primary rightLst">></button>
-                    </div>
-                </div>
-          </div>
-        </div>
 
       </div>
 
@@ -271,29 +223,3 @@
 
   </div>
 {% endblock content %}
-
-{% block javascripts %}
-  {{ block.super}}
-  <!-- Chart.js -->
-  <script src="/static/vendors/Chart.js/dist/Chart.min.js"></script>
-  <!-- gauge.js -->
-  <script src="/static/vendors/gauge.js/dist/gauge.min.js"></script>
-  <!-- Skycons -->
-  <script src="/static/vendors/skycons/skycons.js"></script>
-  <!-- Flot -->
-  <script src="/static/vendors/Flot/jquery.flot.js"></script>
-  <script src="/static/vendors/Flot/jquery.flot.pie.js"></script>
-  <script src="/static/vendors/Flot/jquery.flot.time.js"></script>
-  <script src="/static/vendors/Flot/jquery.flot.stack.js"></script>
-  <script src="/static/vendors/Flot/jquery.flot.resize.js"></script>
-  <!-- Flot plugins -->
-  <script src="/static/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
-  <script src="/static/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
-  <script src="/static/vendors/flot.curvedlines/curvedLines.js"></script>
-  <!-- DateJS -->
-  <script src="/static/vendors/DateJS/build/date.js"></script>
-  <!-- JQVMap -->
-  <script src="/static/vendors/jqvmap/dist/jquery.vmap.js"></script>
-  <script src="/static/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
-  <script src="/static/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
-{% endblock javascripts %}

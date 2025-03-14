@@ -6,12 +6,18 @@ from tinymce import models as tinymce_models
 from django.conf import settings
 from hitcount.models import HitCountMixin, HitCount
 from django.contrib.contenttypes.fields import GenericRelation
-
+from taggit.managers import TaggableManager
 
 def get_upload_path(instance, filename):
     title = instance.album.name
     # slug = slugify(title)
     return "images/%s/%s" % (title,filename)
+
+def get_icon_upload_path(instance, filename):
+    title = instance.album.name
+    # slug = slugify(title)
+    print("Upload to", filename)
+    return "images/%s/icon/%s" % (title,filename)
 
 
 class Banner(models.Model):
@@ -51,6 +57,7 @@ class Image(models.Model):
     # width = models.FloatField(default=100)
     # length = models.FloatField(default=100)
     album = models.ForeignKey(ImageAlbum, related_name='images', on_delete=models.CASCADE,null=True)
+    icon_image = models.ImageField(upload_to=get_icon_upload_path, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -112,6 +119,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     sub_category = models.ForeignKey(Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
     sub_sub_category = models.ForeignKey(Sub_Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
+    product_tags = TaggableManager()
+
 
     price = models.IntegerField(null=True)
     apply_discount = models.BooleanField(default=False, blank=True)
@@ -127,6 +136,15 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False, blank=True)
     is_published = models.BooleanField(default=True, blank=True)
+
+
+    #added this
+    AVAILABILITY_CHOICES = (
+        ('InStock', 'InStock'),
+        ('SoldOut', 'SoldOut'),
+        ('PreOrder', 'PreOrder'),)
+    availability_type = models.CharField(max_length=255, choices=AVAILABILITY_CHOICES, default='InStock')
+
 
 
     product_views=models.IntegerField(default=0, null=True, blank=True)
@@ -201,25 +219,52 @@ class ProductVariant(models.Model):
 class Cart (models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     cart_total = models. IntegerField(default=0, blank=True, null=True)
+    promo_cart_total = models. IntegerField(default=0, blank=True, null=True)
     cart_ordered = models.BooleanField(default=False)
     delivery_charges = models.IntegerField(default=0, blank=True, null=True)
     grand_total = models. IntegerField(default=0, blank=True, null=True)
     cart_savings_total = models. IntegerField(default=0, blank=True, null=True)
+    cart_promo_savings = models. IntegerField(default=0, blank=True, null=True)
+    #update this one
     checkout_status = models.BooleanField(default=False)
     checkout_time = models.DateTimeField(auto_now=True, null=True, blank=True)
+    #update this one
+    cart_promo_flag = models.BooleanField(default=False, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.cart_total > 2000:
+
+        if self.promo_cart_total > 2000:
             self.delivery_charges = 0
+            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
         else:
             self.delivery_charges = 200
+            self.promo_cart_total = self.promo_cart_total + self.delivery_charges
 
-        self.cart_total = self.grand_total + self.delivery_charges - self.cart_savings_total
+        if self.cart_total > 2000:
+            self.delivery_charges = 0
+            self.cart_total = self.cart_total + self.delivery_charges
+        else:
+            self.delivery_charges = 200
+            self.cart_total = self.cart_total + self.delivery_charges
 
         return super(Cart, self).save()
 
     def __str__(self):
         return '{} - {}'.format(self.author, self.cart_ordered)
+
+
+class Promo_Code (models.Model):
+    PROMO_CHOICES = (
+        ('one_time', 'ONE_TIME'),
+        ('on_demand', 'ON_DEMAND'),)
+    promo_type = models.CharField(max_length=255, choices=PROMO_CHOICES, default='one_time')
+    promo_name = models.CharField(max_length=255)
+    promo_code = models.CharField(max_length=255)
+    promo_percent = models.IntegerField()
+    promo_status = models.BooleanField(default=False)
+    promo_text = models.CharField(max_length=255, null=True, blank=True)
+    promo_tag = models.CharField(max_length=255, null=True, blank=True)
+
 
 
 class Cart_Items (models.Model):
@@ -228,9 +273,14 @@ class Cart_Items (models.Model):
     product_quantity = models.IntegerField(default=0, blank=True, null=True)
     add_date_time = models.DateTimeField(auto_now=True,null=True,blank=True)
     total_amount = models.IntegerField(default=0, blank=True, null=True)
+    promo_unit_amount = models.IntegerField(default=0, blank=True, null=True)
+    promo_total_amount = models.IntegerField(default=0, blank=True, null=True)
     savings = models.IntegerField(default=0, blank=True, null=True)
     grand_total_item = models.IntegerField(default=0, blank=True, null=True)
     item_hold_time = models.DateTimeField(null=True, blank=True)
+    promo_savings = models.IntegerField(default=0, blank=True, null=True)
+    total_saving = models.IntegerField(default=0, blank=True, null=True)
+    returned = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
 
@@ -253,7 +303,7 @@ class Cart_Items (models.Model):
 class DeliveryAddress(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True, null=True)
     full_name = models.CharField(max_length=255)
-    mobile_number = models.IntegerField()
+    mobile_number = models.CharField(max_length=50,null=True, blank=True)
     province = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -281,6 +331,19 @@ class UserOrder(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.author, self.order_id)
 
+
+class Returns (models.Model):
+    return_item = models.ForeignKey(Cart_Items ,on_delete=models.CASCADE, blank=True, null=True)
+    return_cost = models.IntegerField(default=0, blank=True, null=True)
+    return_reason = models.CharField(max_length=50,null=True, blank=True)
+    return_date = models.DateTimeField(auto_now=True,null=True,blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.return_date:
+            d = self.return_date
+            self.return_date = timezone.localtime(d).strftime("%Y-%m-%d %H:%M:%S")
+        return super(Returns, self).save()
+
 class OrderUpdate(models.Model):
     update_id  = models.AutoField(primary_key=True)
     order_id = models.IntegerField(default="")
@@ -305,8 +368,4 @@ class ContactUs(models.Model):
 
         return '{} - {}'.format(self.contact_id, self.name)
         # return f"{self.contact_id} - {self.name}"
-
-
-
-
 
