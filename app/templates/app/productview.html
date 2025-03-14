@@ -215,6 +215,14 @@ function myFunction(imgs) {
 
                 <div class="">
 
+                {% if product.is_preorder and not request.user.is_superuser %}
+                        <a class="btn btn-default btn-success btn-lg" href="https://www.instagram.com/eshopiyras/">Visit @eshopiyras to Order</a>
+
+                {% else %}
+
+                    {% if product.is_preorder and request.user.is_superuser %}
+                     <p>It is a preorder, user belongs to group moderator or admin</p>
+                    {% endif %}
 
                   {% for variant in selected_variant %}
 
@@ -267,6 +275,8 @@ function myFunction(imgs) {
 
 
                     {% endfor %}
+
+                    {% endif %}
 <!--                     Modal-->
                     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                       <div class="modal-dialog" role="document">

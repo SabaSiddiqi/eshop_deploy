@@ -1,0 +1,214 @@
+{% extends "app/basesite_updated.html" %}
+
+{% block title %} Branded {{brand.brand_name}} {{category.cat_name}} Products in Pakistan {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if filter_button %}
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+{% endblock javascripts %}
+
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3> {{header_text}} {{size_name}}<small></small> </h3>
+          <br>
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+    <h3> Iyra's Eshop Preorder Portal! </br></h3>
+      <div class="row">
+        <div class="col-md-12">
+            {% if category %}
+                {% for each_size in size_names %}
+                  <button class="alert alert-success" style="background-color:Teal;border:grey;padding:10px;" ><a style="color:WhiteSmoke;" href="/searchbycategory/{{category.cat_slug}}/{{each_size.size_slug}}/">{{each_size}}</a></button>
+                  {% endfor %}
+            {% endif %}
+          <div class="x_panel">
+
+            <div class="x_content">
+
+              <div class="row">
+
+
+                  {% if all_products %}
+                  {% for each_key,each_dict in mega_dict.items %}
+              <div class="col-md-55" style="">
+                  <div class="thumbnail" style="height:320px;background-color:#F7F7F7;">
+                    <div class="image view view-first" style="height:auto;object-fit: cover;">
+                    <a href="/productview/{{each_dict.product.product_id}}">
+                        <img style="  width:100%;object-fit: cover;" src="/media/{{each_dict.product_image.icon_image}}" alt="image" />
+                        {% if each_dict.product.availability_type == 'InStock' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: MediumSeaGreen; color:white;">{{each_dict.product.availability_type}}</button>
+                        {% endif %}
+                        {% if each_dict.product.availability_type == 'SoldOut' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: #f44336; color:white;">{{each_dict.product.availability_type}}</button>
+                        {% endif %}
+                        {% if each_dict.product.availability_type == 'PreOrder' %}
+                        <button class="btn btn-default btn-xs" style="position: absolute; top:0; right:0;margin:0px 0px 0px 0px;background-color: Gold; color:white;">{{each_dict.product.availability_type}}</button>
+                        {% endif %}
+                    </a>
+                    </div>
+
+                    <div class="caption">
+
+                        {% for each_variant in each_dict.variants %}
+                            {% if each_variant.num_available == 0 %}
+                            <button class="btn btn-default btn-xs" style="background-color:silver;text-decoration: line-through; font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
+                                <a>{{each_variant.attribute}}</a>
+                            </button>
+                            {% endif %}
+                            {% if each_variant.num_available != 0 %}
+                            <button class="btn btn-default btn-xs" style="font-size:10px;margin: -2px 0px 2px 0px;padding: 0px 2px 0px 2px;">
+                                <a href="{% url 'shop:productview_details' id=each_dict.product.product_id attribute_slug=each_variant.attribute.attribute_slug %}">{{each_variant.attribute}}</a></button>
+                            </button>
+                            {% endif %}
+                        {% endfor %}
+
+
+
+                        <p style="font-size:10px;"><strong>{{each_dict.product.brand}} </strong>{{each_dict.product.product_name}}</p>
+                        {% if each_dict.product.availability_type == 'InStock' %}
+                          <p style="text-decoration:line-through; font-size:10px;">{{each_dict.product.price}} PKR</p>
+
+                          {% if each_dict.product.discount_percent != None %}
+                          <p style="font-size:10px;">{{each_dict.product.discounted_price}} PKR  <strong style="color:red;">({{each_dict.product.discount_percent}}% OFF)</strong> </p>
+                          {% endif  %}
+                          {% if each_dict.product.discount_percent == None %}
+                          <p> <br></p>
+                          {% endif  %}
+
+
+                        {% if each_dict.product.on_sale %}
+                        <hr style="margin: 2px 0 0px 0;">
+                        <p style="font-size:8px;">Use Code <b>WINTER22</b> for extra 10% OFF</p>
+                        {% endif %}
+                        {% endif %}
+                        </div>
+                  </div>
+              </div>
+              {% endfor %}
+
+
+                  {% else %}
+
+                  <h5> Hey there! We are working to populate this category :) </h5>
+
+                  {% endif %}
+
+
+                <div>
+              <center><ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                  {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+              </ul></center>
+                </div>
+
+
+                  <!--                     Modal-->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="modal-title" id="exampleModalLabel">FILTERS
+                            </h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+
+                            <form id="demo-form2" name="filterform" method="post" data-parsley-validate class="form-horizontal form-label-left"  >
+                            {% csrf_token %}
+
+
+                                <div class="form-group">
+                                      <label class="control-label col-md-3 col-sm-3 col-xs-12">Sort By</label><span class="required"></span>
+                                      <div class="col-md-6 col-sm-6 col-xs-12">
+                                        <select name="sort_by" class="form-control">
+                                                {% for each_option in sortby_options %}
+                                              <option>{{each_option}}</option>
+                                              {% endfor %}}
+                                        </select>
+                                      </div>
+                                    </div>
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select attribute</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                     {% for each_attribute in sizes  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="variant" type="checkbox" value="{{each_attribute}}"> {{each_attribute}}
+                                    </div>
+                                    {% endfor %}
+
+
+                                    <!--{% for each_cat in filter_category  %}-->
+                                    <!--<div class="checkbox">-->
+                                    <!--  <label class=""><input name="variant" type="checkbox" value="{{each_cat}}"> {{each_cat.cat_name}}-->
+                                    <!--</div>-->
+                                    <!--{% endfor %}-->
+
+                                  </div>
+                                </div>
+
+                                <div class="form-group modal-footer ">
+                                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button style="margin-top:5px;" type="submit" class="btn btn-success" >Apply Filters</button>
+                                  </div>
+                                </div>
+                                </form>
+
+
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+

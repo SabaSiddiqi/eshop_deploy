@@ -9,6 +9,7 @@
       <li class="">
 
         {% if user.is_authenticated %}
+
         <a href="javascript:;" style="font-size:12px; padding-left:5px;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
           {{user.username}}
           <span class=" fa fa-angle-down"></span>
@@ -24,6 +25,9 @@
       </a></li>
       {% endif %}
 
+
+
+
       <li role="presentation" class="dropdown">
         <a href="{% url 'shop:cart' %}" style="padding-left:5px; padding-right:5px;" >
           <i style="font-size:18px;" class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></i>
@@ -35,17 +39,24 @@
         <a href="https://www.instagram.com/iyraseshop/" style="padding-left:5px; padding-right:5px;">
           <i style="font-size:18px;" class="fa fa-instagram" aria-hidden="true"></i>
         </a>
-
-
       </li>
+
+
       <li role="presentation" class="dropdown" >
         <a href="https://www.facebook.com/iyraseshop" style="padding-left:5px; padding-right:5px;">
           <i style="font-size:18px;" class="fa fa-facebook-square" aria-hidden="true"></i>
         </a>
-
-
       </li>
-
     </ul>
+
   </nav>
+
 </div>
+            <div class="col-md-12 col-sm-12 col-xs-12 top_search">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search Product by Product ID"  id="qta_field" value={{item.value}}>
+              <span class="input-group-btn">
+                <a class="btn btn-default" type="button"  href='' onclick="this.href='/productview/'+document.getElementById('qta_field').value">Go!</a>
+              </span>
+            </div>
+          </div>

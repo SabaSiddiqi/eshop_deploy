@@ -29,9 +29,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '0zaa_lo3o@x2dn-cc@rqq+x@+kkj44-7cdv*@^g2xh5r^8is_*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+Dev = True
 
-ALLOWED_HOSTS = ['www.iyraseshop.com','iyraseshop.com','webapp-1109369.pythonanywhere.com',]
+if Dev == True:
+    ALLOWED_HOSTS = ['127.0.0.1']
+else:
+    ALLOWED_HOSTS = ['www.iyraseshop.com','iyraseshop.com','webapp-1109369.pythonanywhere.com',]
 
 
 # Application definition
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'django.contrib.sites',
+    'django_cleanup.apps.CleanupConfig',
     # "countdowntimer_model",
     'shop.apps.ShopConfig',
     'django_extensions',
@@ -54,6 +59,7 @@ INSTALLED_APPS = [
     'social_django',
     'hitcount',
     'taggit',
+    'guest_user',
 ]
 
 SITE_ID = 1
@@ -97,6 +103,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
 
     'django.contrib.auth.backends.ModelBackend',
+    'guest_user.backends.GuestBackend',
 )
 
 
@@ -113,18 +120,35 @@ WSGI_APPLICATION = 'chart_shirt.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'iyraseshop$iyraseshopdb',
-        'USER': 'iyraseshop',
-        'PASSWORD': 'Iyr@Atif',
-        'HOST': 'iyraseshop.mysql.pythonanywhere-services.com',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+if Dev==False:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'iyraseshop$iyraseshopdb',
+            'USER': 'iyraseshop',
+            'PASSWORD': 'Iyr@Atif',
+            'HOST': 'iyraseshop.mysql.pythonanywhere-services.com',
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+
+else:
+    import pymysql
+    pymysql.version_info = (1, 4, 2, "final", 0)
+    pymysql.install_as_MySQLdb()
+    #
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'eshop_data',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT':'3306',
+        }
+    }
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

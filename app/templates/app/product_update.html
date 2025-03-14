@@ -80,8 +80,42 @@
                 </div>
 
 
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="tags">Tags<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    {% for tag in product.product_tags.values %}
+                    <input type="text" id="tags" name="tags" required="required" class="form-control col-md-7 col-xs-12"
+                           value="{{tag.name}}">
+                           {% empty %}
+                           {# None #}
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="add_tags">Add Tag<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="add_tags" name="add_tags"  class="form-control col-md-7 col-xs-12"
+                           value="">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12" for="remove_tags">Remove Tag<span class="required"></span>
+                  </label>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                    <input type="text" id="remove_tags" name="remove_tags"  class="form-control col-md-7 col-xs-12"
+                           value="">
+                  </div>
+                </div>
+
+
+
 
                 {% for each_variant in variants %}
+
                 </br>
                 <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12"><strong>Variant - </strong></label><span class="required"></span>
@@ -107,10 +141,24 @@
 
 
                 <div class="form-group">
+                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Shipment</label><span class="required"></span>
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                    <select name="{{each_variant.id}}_shipment" class="form-control">
+                        <option selected="selected">{{each_variant.shipment}}</option>
+                        {% for each_value in shipment reversed %}
+                      <option>{{each_value}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
                   <label class="control-label col-md-3 col-sm-3 col-xs-12" for="buy_price">Buy Price<span class="required"></span>
                   </label>
                   <div class="col-md-6 col-sm-6 col-xs-12">
-                    <input type="number" id="buy_price" name="{{each_variant.id}}_buy_price" required="required" class="form-control col-md-7 col-xs-12" value="{{each_variant.buy_price}}" >
+                    <input type="float" id="buy_price" name="{{each_variant.id}}_buy_price" required="required" class="form-control col-md-7 col-xs-12" value="{{each_variant.buy_price}}" >
                   </div>
                 </div>
 

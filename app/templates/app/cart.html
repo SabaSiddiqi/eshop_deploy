@@ -121,6 +121,7 @@ foreach($_SESSION["cart_item"] as $item) {
 <!--                        <input type="checkbox" id="check-all" class="flat">-->
 <!--                      </th>-->
                         <th class="column-title">ID </th>
+                        <th class="column-title">Image </th>
                       <th class="column-title">Name </th>
                       <th class="column-title">Size </th>
                         <th class="column-title">Price </th>
@@ -136,13 +137,15 @@ foreach($_SESSION["cart_item"] as $item) {
                   </thead>
 
                   <tbody>
-
-                  {% for each_item in user_cart %}
+                  {% for each_item, each_key in order_dict.items %}
                     <tr class="even pointer">
 <!--                      <td class="a-center ">-->
 <!--                        <input type="checkbox" class="flat" name="table_records">-->
 <!--                      </td>-->
                       <td class=" ">{{each_item.product_variant.variant.product_id}}</td>
+                        <td class=" ">
+                    <img style="max-width: 50px; and height: auto;" src="/media/{{each_key}}" alt="image" />
+                    </td>
                       <td class=" ">{{each_item.product_variant.variant.product_name}}</td>
                       <td class=" ">{{each_item.product_variant.attribute}} </td>
                       {% if each_item.product_variant.apply_discount %}
@@ -210,6 +213,11 @@ foreach($_SESSION["cart_item"] as $item) {
 
                   </tbody>
                 </table>
+              </div>
+                  <div class="byline">
+                    <span>Scroll right to view complete table</span>
+                  </div>
+          </div>
 
                   {% if user_cart|first %}
                   <button type="button" style="float:right;" class="btn btn-primary btn-lg"><a style="color:white;" href="{% url 'shop:order_summary' %}" >Checkout</a></button>

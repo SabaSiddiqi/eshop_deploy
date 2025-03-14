@@ -1,0 +1,221 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} My Cart {% endblock title %}
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block javascripts %}
+  {{ block.super }}
+    {% if filter_button %}
+      <script type="text/javascript">
+          $(document).ready(function(){
+              $("#exampleModal").modal('show');
+          });
+      </script>
+  {% endif %}
+{% endblock javascripts %}
+
+{% block content %}
+
+
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Main Orders Summary</h3>
+        </div>
+
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="row">
+
+        <div class="clearfix"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Shop Orders List</h2>
+              <div class="title_right" style="float:right;">
+                  <a class="btn btn-success" href="{% url 'shop:imageupload'  %}">Image(s) Upload</a>
+                <a class="btn btn-success" href="{% url 'shop:productadd'  %}">Add Product</a>
+                <button class="btn btn-default" type="button" data-toggle="modal" data-target="#exampleModal" >Filter & Sort</button>
+
+            </div>
+
+              <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+
+                <p>{{cart_hold_disclaimer|safe}}</p>
+
+
+              <div class="table-responsive">
+                <table class="table table-striped jambo_table bulk_action">
+                  <thead>
+                    <tr class="headings">
+                        <th class="column-title">Order ID</th>
+                        <th class="column-title">Order Brand</th>
+                        <th class="column-title">Order Number</th>
+                        <th class="column-title">Order Date </th>
+                        <th class="column-title">View </th>
+
+
+                      <th class="bulk-actions" colspan="7">
+                        <a class="antoo" style="color:#fff; font-weight:500;">Bulk Actions ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                  {% for each_order in mainorder reversed %}
+                  <tr>
+                      <td>{{each_order.id}}</td>
+                      <td>{{each_order.order_brand}}</td>
+                      <td>{{each_order.order_number}}</td>
+                      <td>{{each_order.order_date}}</td>
+<!--                      <td><a class="btn btn-success" href="{% url 'shop:productupdate' product_id=each_dict.product.product_id  %}">View</a></td>-->
+                  </tr>
+                  {% endfor %}
+
+
+
+
+                  </tbody>
+                </table>
+
+
+
+
+              <center><ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                  {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+              </ul></center>
+
+
+
+              </div>
+
+                <!-- Modal-->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="modal-title" id="exampleModalLabel">FILTERS
+                            </h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+
+                            <form id="demo-form2" name="filterform" method="post" data-parsley-validate class="form-horizontal form-label-left"  >
+                            {% csrf_token %}
+
+
+                                <div class="form-group">
+                                      <label class="control-label col-md-3 col-sm-3 col-xs-12">Sort By</label><span class="required"></span>
+                                      <div class="col-md-6 col-sm-6 col-xs-12">
+                                        <select name="sort_by" class="form-control">
+                                                {% for each_option in sortby_options %}
+                                              <option>{{each_option}}</option>
+                                              {% endfor %}}
+                                        </select>
+                                      </div>
+                                    </div>
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Attribute</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                     {% for each_attribute in sizes  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="variant" type="checkbox" value="{{each_attribute}}"> {{each_attribute}}
+                                    </div>
+                                    {% endfor %}
+
+                                  </div>
+                                </div>
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Category</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                    {% for each_cat in categories  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="category" type="checkbox" value="{{each_cat}}"> {{each_cat.cat_name}}
+                                    </div>
+                                    {% endfor %}
+
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group">
+
+                                  <label class="col-md-3 col-sm-3 col-xs-12 control-label">Select Brand</label><span class="required"></span>
+
+                                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+
+                                    {% for each_brand in all_brands  %}
+                                    <div class="checkbox">
+                                      <label class=""><input name="brand" type="checkbox" value="{{each_brand}}"> {{each_brand.brand_name}}
+                                    </div>
+                                    {% endfor %}
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group modal-footer ">
+                                  <div style="margin-top:5px;" class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button style="margin-top:5px;" type="submit" class="btn btn-success" >Apply Filters</button>
+                                  </div>
+                                </div>
+                                </form>
+
+
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+
+
