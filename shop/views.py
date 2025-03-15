@@ -274,29 +274,29 @@ def product_add(request):
 
     return render(request, 'app/add_product.html',context)
 
-@staff_member_required
-def main_orders_summary(request):
-    context={
+# @staff_member_required
+# def main_orders_summary(request):
+#     context={
 
-        'categories': Category.objects.all(),
-        'image_album':ImageAlbum.objects.all(),
-        'all_brands':Brand.objects.all(),
-        'shipments':Shipment.objects.all(),
-        'attributes':Attribute.objects.all(),
-        'delivery_time':DeliveryTime.objects.all(),
-        'mainorder': MainOrder.objects.all(),
+#         'categories': Category.objects.all(),
+#         'image_album':ImageAlbum.objects.all(),
+#         'all_brands':Brand.objects.all(),
+#         'shipments':Shipment.objects.all(),
+#         'attributes':Attribute.objects.all(),
+#         'delivery_time':DeliveryTime.objects.all(),
+#         # 'mainorder': MainOrder.objects.all(),
 
-        }
+#         }
 
-    return render(request, 'app/main_orders_summary.html',context)
+#     return render(request, 'app/main_orders_summary.html',context)
 
 
 @staff_member_required
 def inventory_add(request):
     if request.method == 'POST':
 
-        if request.POST.get("mainorder"):
-            mainorder = request.POST.get("mainorder")
+        # if request.POST.get("mainorder"):
+        #     mainorder = request.POST.get("mainorder")
 
         if request.POST.get("product_name"):
             product_name = request.POST.get("product_name")
@@ -412,12 +412,12 @@ def inventory_add(request):
             )
 
         n.save()
-        print("Main Order",mainorder)
+        # print("Main Order",mainorder)
         for i in range(len(variant)):
             each_variant=variant[i]
             each_quantity=int(quantity[i])
             ProductVariant.objects.create(
-            main_order = MainOrder.objects.get(order_number=mainorder),
+            # main_order = MainOrder.objects.get(order_number=mainorder),
             variant = Product.objects.get(product_id=n.pk),
             attribute = Attribute.objects.get(attribute=each_variant, attribute_category=category),
             # delivery_time = DeliveryTime.objects.get(delivery_time=delivery_time),
@@ -439,7 +439,7 @@ def inventory_add(request):
         'shipments':Shipment.objects.all(),
         'attributes':Attribute.objects.all(),
         'delivery_time':DeliveryTime.objects.all(),
-        'mainorder': MainOrder.objects.all(),
+        # 'mainorder': MainOrder.objects.all(),
 
         }
 

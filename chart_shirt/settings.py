@@ -30,7 +30,7 @@ SECRET_KEY = '0zaa_lo3o@x2dn-cc@rqq+x@+kkj44-7cdv*@^g2xh5r^8is_*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-Dev = True
+Dev = False
 
 if Dev == True:
     ALLOWED_HOSTS = ['127.0.0.1']

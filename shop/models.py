@@ -99,6 +99,9 @@ class Constants(models.Model):
         return self.constant_name
 
 
+
+
+
 class Brand (models.Model):
     # cat_id = models.AutoField(primary_key=True,)
     brand_name = models.CharField(max_length=225, null=True, default="Brand")
@@ -109,15 +112,6 @@ class Brand (models.Model):
 
     def __str__(self):
         return self.brand_name
-
-
-class MainOrder (models.Model):
-    order_date = models.DateField(null=True, blank=True)
-    order_number = models.CharField(max_length=255, null=True, blank=True)
-    order_brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)
-
-    # def __str__(self):
-    #     return '{} - {} - {}'.format(self.order_date, self.order_number, self.order_brand)
 
 
 
@@ -168,6 +162,17 @@ class Product(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.product_id, self.product_name)
         # return f"{self.product_id} - {self.product_name}"
+
+
+# class MainOrder (models.Model):
+#     order_date = models.DateField(null=True, blank=True)
+#     order_number = models.CharField(max_length=255, null=True, blank=True)
+#     order_brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)
+#     def __str__(self):
+
+#         return self.id
+
+
 
 class DeliveryTime (models.Model):
     delivery_time = models.CharField(max_length=250, null=True, blank=True,unique=True)
@@ -220,7 +225,7 @@ class Shipment(models.Model):
 
 class ProductVariant(models.Model):
 
-    main_order = models.ForeignKey(MainOrder, on_delete=models.CASCADE, null=True, blank=True)
+    # main_order = models.ForeignKey(MainOrder, on_delete=models.CASCADE, null=True, blank=True)
     variant = models.ForeignKey(Product, on_delete=models.CASCADE)
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
     delivery_time = models.ForeignKey(DeliveryTime, on_delete=models.CASCADE, null=True, blank=True)
